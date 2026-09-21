@@ -103,3 +103,53 @@ def tensor_batch(image: Image.Image, preprocess: Callable, device: str = "cpu"):
     if not isinstance(t, torch.Tensor):
         raise TypeError("preprocess must return a torch.Tensor")
     return t.unsqueeze(0).to(device)
+
+
+def resize_short_side(img: Image.Image, short: int) -> Image.Image:
+    """Resize so the shorter side equals ``short`` (aspect preserved)."""
+    w, h = img.size
+    if min(w, h) == short:
+        return img
+    if w <= h:
+        nw, nh = short, int(round(h * short / w))
+    else:
+        nw, nh = int(round(w * short / h)), short
+    return img.resize((max(nw, 1), max(nh, 1)), Image.Resampling.BICUBIC)
+
+
+def build_eval_preprocess(
+    image_size: int = 224,
+    jpeg_quality: int | None = None,
+    resize_short: int | None = None,
+    clip_norm: bool = True,
+):
+    """CLIP (or CNN) preprocess with optional JPEG / downscale robustness augs.
+
+    Robustness protocol (plan):
+      - JPEG q=70: re-encode then restore to model size
+      - resize: short side → 128 (or ``resize_short``), then model native size
+    """
+    from torchvision import transforms
+
+    if clip_norm:
+        normalize = transforms.Normalize(CLIP_MEAN, CLIP_STD)
+    else:
+        normalize = transforms.Normalize((0.485, 0.456, 0.406), (0.229, 0.224, 0.225))
+
+    geo = transforms.Compose(
+        [
+            transforms.Resize(image_size, interpolation=transforms.InterpolationMode.BICUBIC),
+            transforms.CenterCrop(image_size),
+            transforms.ToTensor(),
+            normalize,
+        ]
+    )
+
+    def _fn(img: Image.Image):
+        if resize_short is not None:
+            img = resize_short_side(img, int(resize_short))
+        if jpeg_quality is not None:
+            img = jpeg_compress(img, int(jpeg_quality))
+        return geo(img)
+
+    return _fn

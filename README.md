@@ -93,6 +93,19 @@ python -m deepfake_detection.eval.run_eval --dataset cifake --probe-weights weig
 
 Contract fields: `dataset`, `split`, `model_id`, `acc`, `ap`, `auc`, `n`, `threshold`, `latency_p50_ms`, `latency_p95_ms`, `aug`, `git_commit`, `config_hash`.
 
+
+## M3 — Cross-generator + NPR-lite
+
+```bash
+python scripts/download_crossgen.py --packs progan hemg_wild --max-per-class 80
+python -m deepfake_detection.train.cnn_head --config configs/train_npr_lite_subset.yaml
+python -m deepfake_detection.eval.cross_gen \
+  --probe-weights weights/cifake_clip_vit_l14_linear.pth \
+  --npr-weights weights/npr_lite_cifake.pth
+```
+
+See `docs/m3_crossgen.md` and `docs/npr_integration.md`. Full NPR is **not** vendored (too heavy); NPR-lite + score fusion is the M3 path.
+
 ## CIFAKE data (M2)
 
 Source: [jordan-bird/CIFAKE](https://github.com/jordan-bird/CIFAKE-Real-and-AI-Generated-Synthetic-Images) (Bird & Lotfi, [arXiv:2303.14126](https://arxiv.org/abs/2303.14126)).

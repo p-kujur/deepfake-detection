@@ -174,10 +174,10 @@ deepfake-detection/
 - [x] Unit tests for preprocess + schema
 
 ### M3 — Cross-test + second head (week 3)
-- [ ] Eval on held-out / GenImage subset
-- [ ] Add NPR (or EffNet) second head + simple fusion
-- [ ] Robustness suite (JPEG, resize)
-- [ ] Document failure modes
+- [x] Eval on held-out cross-gen packs (ProGAN-Eval + Hemg wild AI-art; GenImage full deferred — too heavy)
+- [x] NPR-lite second head + mean-prob fusion (full NPR documented, not vendored)
+- [x] Robustness suite (JPEG q=70, resize-short=128)
+- [x] Document failure modes / NPR path (`docs/m3_crossgen.md`, `docs/npr_integration.md`)
 
 ### M4 — Product wrap (week 4)
 - [ ] `detect` CLI + FastAPI `POST /detect`

@@ -1,0 +1,25 @@
+# M3 cross-generator + robustness eval
+model:
+  id: unifd-clip-vit-l14-linear
+  backbone: ViT-L-14
+  pretrained: openai
+  backend: open_clip
+  image_size: 224
+  npr_image_size: 128
+  threshold: 0.5
+
+data:
+  root: datasets/crossgen
+  packs: [progan_eval, hemg_wild]
+  max_per_class: null
+
+robustness:
+  jpeg_quality: 70
+  resize_short: 128
+
+fusion:
+  weight_unifd: 0.5
+
+notes: >
+  Cross-gen packs: ProGAN-Eval (GAN family) and Hemg wild AI-art (Midjourney-style).
+  CIFAKE probe trained on SD1.4 32x32 — these are unseen generator families.

@@ -1,0 +1,23 @@
+seed: 42
+model:
+  id: npr-lite-cnn-v1
+  image_size: 128
+  width: 32
+  threshold: 0.5
+data:
+  name: cifake
+  hf_id: dragonintelligence/CIFAKE-image-dataset
+  cache_dir: datasets/cifake
+  max_train: 4000
+  max_test: 2000
+train:
+  device: auto
+  batch_size: 64
+  epochs: 8
+  lr: 0.001
+  weight_decay: 0.0001
+  checkpoint_dir: artifacts/checkpoints
+  weights_out: weights/npr_lite_cifake.pth
+metrics:
+  output_dir: artifacts/runs
+notes: M3 NPR-lite second head on same CIFAKE subset as M2 probe.
