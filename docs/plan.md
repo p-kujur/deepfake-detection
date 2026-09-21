@@ -11,15 +11,15 @@
 
 ---
 
-## 0. Decision gate (need Ezra + project bot)
+## 0. Decision gate (LOCKED 2026-09-21 — recommended defaults)
 
 | # | Decision | Options | Recommendation (coder) | Status |
 |---|----------|---------|--------------------------|--------|
-| D1 | Primary modality | AIGC images / face video / both | **Start AIGC images**, add face-video branch in phase 2 | OPEN |
-| D2 | Product shape | CLI / REST API / Gradio demo | CLI + REST + thin Gradio | OPEN |
-| D3 | Stack | PyTorch only? GPU? | PyTorch 2.x, CUDA if available, CPU fallback | OPEN |
-| D4 | Data access | CIFAKE / GenImage / FF++ / HF mirrors | Phase 1: CIFAKE; Phase 2: GenImage subset | OPEN |
-| D5 | License posture | Research / commercial | Prefer MIT/Apache components for core path | OPEN |
+| D1 | Primary modality | AIGC images / face video / both | **Start AIGC images**, add face-video branch in phase 2 | **LOCKED** |
+| D2 | Product shape | CLI / REST API / Gradio demo | CLI + REST + thin Gradio | **LOCKED** |
+| D3 | Stack | PyTorch only? GPU? | PyTorch 2.x, CUDA if available, CPU fallback | **LOCKED** |
+| D4 | Data access | CIFAKE / GenImage / FF++ / HF mirrors | Phase 1: CIFAKE; Phase 2: GenImage subset | **LOCKED** |
+| D5 | License posture | Research / commercial | Prefer MIT/Apache components for core path | **LOCKED** |
 
 ---
 
@@ -157,7 +157,7 @@ deepfake-detection/
 
 ### M0 — Lock plan (day 0–1)
 - [x] Fill §1–3 (project bot)
-- [ ] Ezra confirms D1–D5
+- [x] Ezra confirms D1–D5 (skipped widgets → recommended defaults locked 2026-09-21)
 - [ ] Create Origin / Git repo via cloud agent
 - [ ] Logger bot hooks once available
 
@@ -224,4 +224,4 @@ deepfake-detection/
 
 ---
 
-*v0.2: §1–3 filled by deepfake detection project bot — 18 Sep 2026. Shortlist confirmed: UniFD → NPR → face branch (DeepfakeBench). Ezra: unlock D1–D5 to start M1.*
+*v0.2.1: §1–3 filled 18 Sep 2026; D1–D5 LOCKED to recommended defaults 21 Sep 2026 (widgets skipped). Shortlist: UniFD → NPR → face branch (DeepfakeBench). M1 scaffold on main.*
