@@ -1,4 +1,4 @@
-# Deepfake Detection (M1–M3b)
+# Deepfake Detection (M1–M3c)
 
 AIGC **still-image** detector scaffold: frozen **CLIP ViT-L/14** + **linear probe** (UniFD-inspired), with CLI, FastAPI, and Gradio stubs.
 
@@ -94,6 +94,17 @@ python -m deepfake_detection.eval.run_eval --dataset cifake --probe-weights weig
 Contract fields: `dataset`, `split`, `model_id`, `acc`, `ap`, `auc`, `n`, `threshold`, `latency_p50_ms`, `latency_p95_ms`, `aug`, `git_commit`, `config_hash`.
 
 
+
+## M3c — Dual-probe ensemble/router
+
+```bash
+python -m deepfake_detection.eval.dual_probe \
+  --progan-weights weights/progan_clip_vit_l14_linear.pth \
+  --cifake-weights weights/cifake_clip_vit_l14_linear.pth \
+  --cifake-max 800
+```
+
+Product default **soft_router** keeps ProGAN holdout AUC ≈0.997 and CIFAKE ≈0.97. Best **Hemg** cross-gen AUC remains ProGAN-probe alone **0.7798** (gate ≥0.80 **not met**). See `docs/m3c_near_miss.md`.
 
 ## M3b — ProGAN probe (domain close)
 

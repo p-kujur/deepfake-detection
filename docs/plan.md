@@ -184,6 +184,12 @@ deepfake-detection/
 - [x] In-domain ProGAN holdout + Hemg cross-gen + CIFAKE tradeoff
 - [x] Docs: `docs/m3b_progan_probe.md` (Hemg AUC 0.78; ≥0.80 **missed**)
 
+### M3c — Dual-probe ensemble/router (near-miss polish)
+- [x] ProGAN + CIFAKE UniFD probe ensemble (mean / logit / confidence router)
+- [x] Select on ProGAN val + CIFAKE subset (never Hemg); soft_router product default
+- [x] NPR-lite retrained on ProGAN split (holdout ~chance — not used for gate)
+- [x] Docs: `docs/m3c_near_miss.md` — Hemg best still **0.7798**; gate **missed**; M4 path noted
+
 ### M4 — Product wrap (week 4)
 - [ ] `detect` CLI + FastAPI `POST /detect`
 - [ ] Gradio demo

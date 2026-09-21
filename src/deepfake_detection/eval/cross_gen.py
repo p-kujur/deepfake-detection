@@ -54,24 +54,35 @@ def _scores_to_metrics(
 
 @torch.inference_mode()
 def score_model(model, loader, device, threshold: float = 0.5, desc: str = "eval"):
+    """Return probs, labels, metrics dict, and raw logits (for logit fusion)."""
     model.eval()
-    probs_all, labels_all, lats = [], [], []
+    probs_all, logits_all, labels_all, lats = [], [], [], []
     for images, y in tqdm(loader, desc=desc, leave=False):
         images = images.to(device)
         t0 = time.perf_counter()
-        probs = model.predict_proba(images).cpu().numpy()
+        logits = model(images).squeeze(-1)
+        probs = torch.sigmoid(logits).cpu().numpy()
         dt = (time.perf_counter() - t0) * 1000.0 / max(images.size(0), 1)
         lats.extend([dt] * images.size(0))
         probs_all.append(probs)
+        logits_all.append(logits.detach().cpu().numpy())
         labels_all.append(y.numpy())
     probs = np.concatenate(probs_all)
+    logits = np.concatenate(logits_all)
     labels = np.concatenate(labels_all)
-    return probs, labels, _scores_to_metrics(probs, labels, threshold, lats)
+    return probs, labels, _scores_to_metrics(probs, labels, threshold, lats), logits
 
 
 def fuse_probs(p_a: np.ndarray, p_b: np.ndarray, weight_a: float = 0.5) -> np.ndarray:
     w = float(weight_a)
     return w * p_a + (1.0 - w) * p_b
+
+
+def fuse_logits(logit_a: np.ndarray, logit_b: np.ndarray, weight_a: float = 0.5) -> np.ndarray:
+    """Weighted average in logit space, then sigmoid → probability."""
+    w = float(weight_a)
+    fused = w * logit_a + (1.0 - w) * logit_b
+    return 1.0 / (1.0 + np.exp(-fused))
 
 
 def _write_run(
@@ -126,6 +137,7 @@ def run_pack(
     batch_size: int,
     threshold: float,
     fusion_weight: float,
+    fusion_mode: str = "mean",
     max_per_class: int | None,
     jpeg_quality: int | None,
     resize_short: int | None,
@@ -143,7 +155,9 @@ def run_pack(
         pack_root, transform=clip_tf, max_per_class=max_per_class, seed=42
     )
     loader_clip = DataLoader(ds_clip, batch_size=batch_size, shuffle=False, num_workers=0)
-    p_u, y, m_u = score_model(unifd_model, loader_clip, device, threshold=threshold, desc="unifd")
+    p_u, y, m_u, logit_u = score_model(
+        unifd_model, loader_clip, device, threshold=threshold, desc="unifd"
+    )
 
     aug = {
         "jpeg": jpeg_quality is not None,
@@ -181,7 +195,9 @@ def run_pack(
             pack_root, transform=cnn_tf, max_per_class=max_per_class, seed=42
         )
         loader_cnn = DataLoader(ds_cnn, batch_size=batch_size, shuffle=False, num_workers=0)
-        p_c, y_c, m_c = score_model(npr_model, loader_cnn, device, threshold=threshold, desc="npr")
+        p_c, y_c, m_c, logit_c = score_model(
+            npr_model, loader_cnn, device, threshold=threshold, desc="npr"
+        )
         assert np.array_equal(y, y_c), "label mismatch between UniFD and CNN loaders"
         _write_run(
             dataset=f"crossgen_{pack_name}",
@@ -196,22 +212,41 @@ def run_pack(
         )
         results["npr_lite"] = m_c
 
-        p_f = fuse_probs(p_u, p_c, weight_a=fusion_weight)
+        mode = str(fusion_mode).lower().strip()
+        if mode in ("logit", "logits"):
+            p_f = fuse_logits(logit_u, logit_c, weight_a=fusion_weight)
+            mode_label = "logit"
+        else:
+            p_f = fuse_probs(p_u, p_c, weight_a=fusion_weight)
+            mode_label = "mean"
         m_f = _scores_to_metrics(p_f, y, threshold, [])
         m_f["latency_p50_ms"] = m_u["latency_p50_ms"]
         m_f["latency_p95_ms"] = m_u["latency_p95_ms"]
         _write_run(
             dataset=f"crossgen_{pack_name}",
             split="test",
-            model_id="fusion-unifd+npr-lite",
+            model_id=f"fusion-{mode_label}-unifd+npr-lite",
             metrics=m_f,
             threshold=threshold,
-            aug={**aug, "fusion_weight_unifd": fusion_weight},
-            notes=f"M3 mean-prob fusion UniFD×{fusion_weight} + NPR-lite×{1 - fusion_weight}",
+            aug={
+                **aug,
+                "fusion_weight_unifd": fusion_weight,
+                "fusion_mode": mode_label,
+            },
+            notes=(
+                f"M3c {mode_label} fusion UniFD×{fusion_weight} + "
+                f"NPR-lite×{1 - fusion_weight}"
+            ),
             config_path=config_path,
-            tag=f"cg-{pack_name}-fusion{tag_suffix}",
+            tag=f"cg-{pack_name}-fusion-{mode_label}{tag_suffix}",
         )
         results["fusion"] = m_f
+        results["fusion_mode"] = mode_label
+        results["_logits_unifd"] = logit_u
+        results["_logits_npr"] = logit_c
+        results["_probs_unifd"] = p_u
+        results["_probs_npr"] = p_c
+        results["_labels"] = y
 
     return results
 
@@ -230,6 +265,12 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--skip-npr", action="store_true")
     parser.add_argument("--skip-robustness", action="store_true")
     parser.add_argument("--fusion-weight", type=float, default=0.5)
+    parser.add_argument(
+        "--fusion-mode",
+        choices=["mean", "logit"],
+        default="mean",
+        help="Score fusion: mean of probs, or weighted logits then sigmoid",
+    )
     args = parser.parse_args(argv)
 
     cfg = _load_yaml(args.config)
@@ -279,6 +320,7 @@ def main(argv: list[str] | None = None) -> int:
             batch_size=args.batch_size,
             threshold=threshold,
             fusion_weight=args.fusion_weight,
+            fusion_mode=args.fusion_mode,
             max_per_class=int(max_per_class) if max_per_class else None,
             jpeg_quality=None,
             resize_short=None,

@@ -1,0 +1,30 @@
+# M3c — NPR-lite retrained on same ProGAN train split as UniFD probe (for fusion).
+seed: 42
+model:
+  id: npr-lite-cnn-v1-progan
+  image_size: 128
+  width: 32
+  threshold: 0.5
+data:
+  name: progan_folder
+  train_root: datasets/progan_forensynths/splits/train
+  val_root: datasets/progan_forensynths/splits/val
+  test_root: datasets/progan_forensynths/splits/test
+  max_train: null
+  max_test: null
+train:
+  device: auto
+  batch_size: 64
+  epochs: 12
+  lr: 0.001
+  weight_decay: 0.0001
+  aug: true
+  jpeg_prob: 0.5
+  blur_prob: 0.1
+  checkpoint_dir: artifacts/checkpoints
+  weights_out: weights/npr_lite_progan.pth
+metrics:
+  output_dir: artifacts/runs
+notes: >
+  M3c NPR-lite on ProGAN train split (same as UniFD probe) for mean/logit fusion
+  toward Hemg cross-gen AUC ≥ 0.80. Hemg never in train.

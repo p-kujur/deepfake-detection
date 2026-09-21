@@ -31,3 +31,18 @@ def test_folder_dataset_import():
     from deepfake_detection.data import RealFakeFolderDataset
 
     assert RealFakeFolderDataset is not None
+
+
+def test_npr_lite_progan_config_exists():
+    cfg_path = Path("configs/train_npr_lite_progan.yaml")
+    assert cfg_path.is_file()
+    cfg = yaml.safe_load(cfg_path.read_text())
+    assert cfg["data"]["name"] == "progan_folder"
+    assert cfg["train"]["weights_out"].endswith("npr_lite_progan.pth")
+
+
+def test_dual_probe_import():
+    from deepfake_detection.eval import dual_probe
+
+    assert hasattr(dual_probe, "confidence_router")
+    assert hasattr(dual_probe, "select_on_val")

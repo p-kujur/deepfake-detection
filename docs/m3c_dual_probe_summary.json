@@ -1,0 +1,171 @@
+{
+  "milestone": "M3c",
+  "selected": {
+    "mode": "soft_router",
+    "weight_a": 0.5,
+    "acc": 0.975,
+    "ap": 0.996512759752106,
+    "auc": 0.9962,
+    "n": 200,
+    "auc_progan_val": 0.9962,
+    "auc_cifake": 0.966580382152861,
+    "dual_score": 0.9813901910764304
+  },
+  "gate": {
+    "target_hemg_auc": 0.8,
+    "hemg_auc": 0.6885309278350515,
+    "progan_holdout_auc": 0.99715,
+    "target_met": false,
+    "progan_holdout_preserved": true
+  },
+  "tables": {
+    "in_domain": {
+      "progan_holdout": {
+        "progan_probe": {
+          "mode": "progan_only",
+          "weight_a": 0.5,
+          "acc": 0.9875,
+          "ap": 0.9996892108647503,
+          "auc": 0.999675,
+          "n": 400
+        },
+        "cifake_probe": {
+          "mode": "cifake_only",
+          "weight_a": 0.5,
+          "acc": 0.4,
+          "ap": 0.41994946217018747,
+          "auc": 0.40465,
+          "n": 400
+        },
+        "selected_ensemble": {
+          "mode": "soft_router",
+          "weight_a": 0.5,
+          "acc": 0.97,
+          "ap": 0.9971077549156607,
+          "auc": 0.99715,
+          "n": 400
+        },
+        "mean_0.5": {
+          "mode": "mean",
+          "weight_a": 0.5,
+          "acc": 0.97,
+          "ap": 0.9954109895703613,
+          "auc": 0.9949749999999999,
+          "n": 400
+        },
+        "logit_0.5": {
+          "mode": "logit",
+          "weight_a": 0.5,
+          "acc": 0.97,
+          "ap": 0.9972095167073411,
+          "auc": 0.9972,
+          "n": 400
+        },
+        "router": {
+          "mode": "router",
+          "weight_a": 0.5,
+          "acc": 0.97,
+          "ap": 0.9950611073712805,
+          "auc": 0.9955,
+          "n": 400
+        }
+      }
+    },
+    "cross_gen": {
+      "hemg_wild": {
+        "progan_probe": {
+          "mode": "progan_only",
+          "weight_a": 0.5,
+          "acc": 0.5706214689265536,
+          "ap": 0.8127923313399434,
+          "auc": 0.7797680412371134,
+          "n": 177
+        },
+        "cifake_probe": {
+          "mode": "cifake_only",
+          "weight_a": 0.5,
+          "acc": 0.5141242937853108,
+          "ap": 0.5120986638213996,
+          "auc": 0.4568298969072165,
+          "n": 177
+        },
+        "selected_ensemble": {
+          "mode": "soft_router",
+          "weight_a": 0.5,
+          "acc": 0.632768361581921,
+          "ap": 0.6481647062032034,
+          "auc": 0.6885309278350515,
+          "n": 177
+        },
+        "mean_0.5": {
+          "mode": "mean",
+          "weight_a": 0.5,
+          "acc": 0.632768361581921,
+          "ap": 0.7223425672160062,
+          "auc": 0.7082474226804123,
+          "n": 177
+        },
+        "logit_0.5": {
+          "mode": "logit",
+          "weight_a": 0.5,
+          "acc": 0.632768361581921,
+          "ap": 0.6641573285566476,
+          "auc": 0.6926546391752577,
+          "n": 177
+        },
+        "router": {
+          "mode": "router",
+          "weight_a": 0.5,
+          "acc": 0.632768361581921,
+          "ap": 0.5894949297359512,
+          "auc": 0.631701030927835,
+          "n": 177
+        }
+      }
+    },
+    "cifake_tradeoff": {
+      "cifake_test_subset": {
+        "progan_probe": {
+          "mode": "progan_only",
+          "weight_a": 0.5,
+          "acc": 0.41625,
+          "ap": 0.42513342537355747,
+          "auc": 0.38199029611844737,
+          "n": 800
+        },
+        "cifake_probe": {
+          "mode": "cifake_only",
+          "weight_a": 0.5,
+          "acc": 0.91,
+          "ap": 0.9740841195476496,
+          "auc": 0.9727641056422569,
+          "n": 800
+        },
+        "selected_ensemble": {
+          "mode": "soft_router",
+          "weight_a": 0.5,
+          "acc": 0.8975,
+          "ap": 0.964661438739388,
+          "auc": 0.966580382152861,
+          "n": 800
+        },
+        "mean_0.5": {
+          "mode": "mean",
+          "weight_a": 0.5,
+          "acc": 0.8975,
+          "ap": 0.954546899047154,
+          "auc": 0.9618659963985594,
+          "n": 800
+        },
+        "router": {
+          "mode": "router",
+          "weight_a": 0.5,
+          "acc": 0.8975,
+          "ap": 0.9514304135773379,
+          "auc": 0.9559448779511804,
+          "n": 800
+        }
+      }
+    }
+  }
+}

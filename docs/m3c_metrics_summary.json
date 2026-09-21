@@ -1,0 +1,14 @@
+{
+  "milestone": "M3c",
+  "date_ist": "2026-09-21",
+  "target_cross_gen_auc": 0.8,
+  "target_met": false,
+  "best_hemg_auc": 0.7798,
+  "best_hemg_model": "progan_probe_alone",
+  "selected_product_ensemble": "soft_router",
+  "progan_holdout_auc_progan_probe": 0.9997,
+  "progan_holdout_auc_soft_router": 0.99715,
+  "cifake_tradeoff_auc_soft_router": 0.9666,
+  "npr_lite_progan_holdout_auc": 0.51385,
+  "notes": "Ensemble preserves ProGAN+CIFAKE; does not beat ProGAN-only on Hemg. Gate missed by ~0.020."
+}
