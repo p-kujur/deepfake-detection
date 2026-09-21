@@ -1,5 +1,12 @@
-"""Dataset loaders and transforms (CIFAKE / GenImage wired in later milestones)."""
+"""Dataset loaders and transforms (CIFAKE / GenImage)."""
 
-from .transforms import build_clip_preprocess, load_image
+from .cifake import CIFAKEDataset, download_cifake
+from .transforms import build_clip_preprocess, build_train_preprocess, load_image
 
-__all__ = ["build_clip_preprocess", "load_image"]
+__all__ = [
+    "CIFAKEDataset",
+    "download_cifake",
+    "build_clip_preprocess",
+    "build_train_preprocess",
+    "load_image",
+]

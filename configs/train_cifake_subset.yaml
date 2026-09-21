@@ -1,0 +1,42 @@
+# M2 quick-run config (CPU-friendly). Prefer full split via train_cifake.yaml when GPU/time allows.
+seed: 42
+
+model:
+  id: unifd-clip-vit-l14-linear
+  backbone: ViT-L-14
+  pretrained: openai
+  backend: open_clip
+  freeze_backbone: true
+  image_size: 224
+  threshold: 0.5
+
+data:
+  name: cifake
+  hf_id: dragonintelligence/CIFAKE-image-dataset
+  cache_dir: datasets/cifake
+  # Subset of official 100k/20k split — first metrics.json milestone
+  max_train: 4000
+  max_test: 2000
+
+train:
+  device: auto
+  batch_size: 8          # CLIP forward on CPU
+  num_workers: 0
+  epochs: 15             # epochs over cached features (cheap)
+  lr: 0.001
+  weight_decay: 0.0
+  probe_batch_size: 512
+  aug: false             # set true or pass --aug for Blur/JPEG
+  jpeg_prob: 0.5
+  blur_prob: 0.1
+  feature_cache_dir: artifacts/feature_cache
+  checkpoint_dir: artifacts/checkpoints
+  weights_out: weights/cifake_clip_vit_l14_linear.pth
+  force_reextract: false
+
+metrics:
+  output_dir: artifacts/runs
+
+notes: >
+  Subset M2 run. Targets Acc≥0.90 / AP·AUC≥0.95 are aspirational for full CIFAKE;
+  report subset numbers honestly. Full train: configs/train_cifake.yaml

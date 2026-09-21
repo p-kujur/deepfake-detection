@@ -1,4 +1,4 @@
-# Deepfake Detection (M1 scaffold)
+# Deepfake Detection (M1–M2)
 
 AIGC **still-image** detector scaffold: frozen **CLIP ViT-L/14** + **linear probe** (UniFD-inspired), with CLI, FastAPI, and Gradio stubs.
 
@@ -83,14 +83,50 @@ python scripts/run_gradio.py
 # or: python -m deepfake_detection.api.gradio_app
 ```
 
-### Metrics stub
+### Metrics stub / CIFAKE eval
 
 ```bash
-python -m deepfake_detection.eval.run_eval
+python -m deepfake_detection.eval.run_eval --dataset stub
+python -m deepfake_detection.eval.run_eval --dataset cifake --probe-weights weights/cifake_clip_vit_l14_linear.pth
 # writes artifacts/runs/<id>/metrics.json
 ```
 
 Contract fields: `dataset`, `split`, `model_id`, `acc`, `ap`, `auc`, `n`, `threshold`, `latency_p50_ms`, `latency_p95_ms`, `aug`, `git_commit`, `config_hash`.
+
+## CIFAKE data (M2)
+
+Source: [jordan-bird/CIFAKE](https://github.com/jordan-bird/CIFAKE-Real-and-AI-Generated-Synthetic-Images) (Bird & Lotfi, [arXiv:2303.14126](https://arxiv.org/abs/2303.14126)).
+
+HF mirror used by the loader (official 100k train / 20k test):
+[`dragonintelligence/CIFAKE-image-dataset`](https://huggingface.co/datasets/dragonintelligence/CIFAKE-image-dataset).
+
+```bash
+pip install datasets   # or: pip install -e ".[dev]" after pull
+python scripts/download_cifake.py
+# caches under datasets/cifake/  (gitignored)
+```
+
+Optional Kaggle original (~110 MB): `birdy654/cifake-real-and-ai-generated-synthetic-images`.
+
+### Train linear probe (frozen CLIP)
+
+```bash
+# CPU-friendly subset (default) → artifacts/runs/<id>/metrics.json
+python -m deepfake_detection.train.probe --config configs/train_cifake_subset.yaml
+
+# Full official split (slow on CPU — hours for feature extract)
+python -m deepfake_detection.train.probe --config configs/train_cifake.yaml
+
+# Optional Blur/JPEG train aug
+python -m deepfake_detection.train.probe --config configs/train_cifake_subset.yaml --aug
+```
+
+Checkpoints (gitignored):
+
+- `artifacts/checkpoints/<run_id>_cifake_probe.pth`
+- `weights/cifake_clip_vit_l14_linear.pth` (latest convenience copy)
+
+Aspirational in-domain targets (plan): Acc ≥ 0.90, AP/AUC ≥ 0.95 — report actual metrics honestly; subset runs are labeled `dataset: cifake_subset`.
 
 ## Tests
 
@@ -105,7 +141,7 @@ pytest -q
 - **Generalization:** cross-generator AUC is the real goal; in-domain accuracy alone is insufficient (see `docs/plan.md`).
 - **Robustness:** social re-encoding (JPEG, resize) can shift scores; log metrics under those augs.
 - **Weights:** UniFD checkpoints live on Google Drive and may require manual download; see `scripts/download_weights.py`.
-- **No huge datasets** are bundled. CIFAKE / GenImage / FF++ come later via separate download scripts.
+- **Datasets:** CIFAKE via `scripts/download_cifake.py` (not committed). GenImage / FF++ come later.
 - **Legal / ethics:** output is a model score with caveats — not a court-grade authenticity claim.
 
 ## Docs

@@ -168,10 +168,10 @@ deepfake-detection/
 - [x] Metrics logger (Acc, AP, AUC stubs)
 
 ### M2 — Train tiny baseline (week 2)
-- [ ] CIFAKE dataloader + Blur/JPEG aug
-- [ ] Train linear probe or ResNet baseline
-- [ ] Log Acc/AP; save checkpoint + config hash
-- [ ] Unit tests for preprocess + schema
+- [x] CIFAKE dataloader + Blur/JPEG aug
+- [x] Train linear probe or ResNet baseline
+- [x] Log Acc/AP; save checkpoint + config hash
+- [x] Unit tests for preprocess + schema
 
 ### M3 — Cross-test + second head (week 3)
 - [ ] Eval on held-out / GenImage subset

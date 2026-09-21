@@ -1,0 +1,42 @@
+# M2 full official CIFAKE split (100k train / 20k test).
+# Feature extraction of CLIP ViT-L/14 on CPU can take many hours — use GPU if available
+# or start from the subset config first.
+seed: 42
+
+model:
+  id: unifd-clip-vit-l14-linear
+  backbone: ViT-L-14
+  pretrained: openai
+  backend: open_clip
+  freeze_backbone: true
+  image_size: 224
+  threshold: 0.5
+
+data:
+  name: cifake
+  hf_id: dragonintelligence/CIFAKE-image-dataset
+  cache_dir: datasets/cifake
+  max_train: null
+  max_test: null
+
+train:
+  device: auto
+  batch_size: 16
+  num_workers: 2
+  epochs: 20
+  lr: 0.001
+  weight_decay: 0.0
+  probe_batch_size: 1024
+  aug: true
+  jpeg_prob: 0.5
+  blur_prob: 0.1
+  feature_cache_dir: artifacts/feature_cache
+  checkpoint_dir: artifacts/checkpoints
+  weights_out: weights/cifake_clip_vit_l14_linear.pth
+  force_reextract: false
+
+metrics:
+  output_dir: artifacts/runs
+
+notes: >
+  Full official CIFAKE train/test. Expect Acc≥0.90, AP/AUC≥0.95 in-domain (aspirational).
