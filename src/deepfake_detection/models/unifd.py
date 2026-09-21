@@ -18,7 +18,6 @@ from typing import Any
 
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 
 from deepfake_detection import __model_id__, __version__
 from deepfake_detection.data.transforms import build_clip_preprocess, load_image, tensor_batch
@@ -87,8 +86,10 @@ class UniFDClipLinear(nn.Module):
                 "Install with: pip install open-clip-torch"
             ) from e
 
+        # OpenAI CLIP checkpoints use QuickGELU; mismatch silently hurts UniFD probes.
+        force_qg = str(pretrained).lower() in {"openai", "openai_clip"}
         model, _, _ = open_clip.create_model_and_transforms(
-            backbone, pretrained=pretrained
+            backbone, pretrained=pretrained, force_quick_gelu=force_qg
         )
         self.visual = model.visual
         # open_clip ViT-L/14 openai embed dim is 768
@@ -142,14 +143,16 @@ class UniFDClipLinear(nn.Module):
                 p.requires_grad = False
 
     def forward(self, images: torch.Tensor) -> torch.Tensor:
-        """Return logits of shape (N, 1)."""
+        """Return logits of shape (N, 1).
+
+        Matches UniFD CLIPModel: encode_image → Linear, **without** L2-norm
+        before the probe (Ojha et al. CVPR 2023).
+        """
         with torch.no_grad():
             feats = self._encode_image(images)
         if feats.ndim > 2:
             feats = feats.flatten(1)
-        # L2-normalize like UniFD / CLIP retrieval
-        feats = F.normalize(feats.float(), dim=-1)
-        return self.head(feats)
+        return self.head(feats.float())
 
     def predict_proba(self, images: torch.Tensor) -> torch.Tensor:
         logits = self.forward(images)

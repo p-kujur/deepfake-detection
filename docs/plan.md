@@ -162,10 +162,10 @@ deepfake-detection/
 - [ ] Logger bot hooks once available
 
 ### M1 — Scaffold + pretrained smoke (week 1)
-- [ ] Repo skeleton + deps (PyTorch, transformers/open_clip, FastAPI, Gradio)
-- [ ] Integrate UniFD pretrained inference
-- [ ] Smoke: ≥20 known real/fake images → JSON results
-- [ ] Metrics logger (Acc, AP, AUC stubs)
+- [x] Repo skeleton + deps (PyTorch, transformers/open_clip, FastAPI, Gradio)
+- [x] Integrate UniFD pretrained inference
+- [x] Smoke: ≥20 known real/fake images → JSON results (P1b pack; gate ≥18/20)
+- [x] Metrics logger (Acc, AP, AUC stubs)
 
 ### M2 — Train tiny baseline (week 2)
 - [ ] CIFAKE dataloader + Blur/JPEG aug

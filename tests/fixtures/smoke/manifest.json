@@ -1,0 +1,82 @@
+[
+  {
+    "path": "tests/fixtures/smoke/real/real_01.png",
+    "label": "real"
+  },
+  {
+    "path": "tests/fixtures/smoke/real/real_02.png",
+    "label": "real"
+  },
+  {
+    "path": "tests/fixtures/smoke/real/real_03.png",
+    "label": "real"
+  },
+  {
+    "path": "tests/fixtures/smoke/real/real_04.png",
+    "label": "real"
+  },
+  {
+    "path": "tests/fixtures/smoke/real/real_05.png",
+    "label": "real"
+  },
+  {
+    "path": "tests/fixtures/smoke/real/real_06.png",
+    "label": "real"
+  },
+  {
+    "path": "tests/fixtures/smoke/real/real_07.png",
+    "label": "real"
+  },
+  {
+    "path": "tests/fixtures/smoke/real/real_08.png",
+    "label": "real"
+  },
+  {
+    "path": "tests/fixtures/smoke/real/real_09.png",
+    "label": "real"
+  },
+  {
+    "path": "tests/fixtures/smoke/real/real_10.png",
+    "label": "real"
+  },
+  {
+    "path": "tests/fixtures/smoke/fake/fake_01.png",
+    "label": "fake"
+  },
+  {
+    "path": "tests/fixtures/smoke/fake/fake_02.png",
+    "label": "fake"
+  },
+  {
+    "path": "tests/fixtures/smoke/fake/fake_03.png",
+    "label": "fake"
+  },
+  {
+    "path": "tests/fixtures/smoke/fake/fake_04.png",
+    "label": "fake"
+  },
+  {
+    "path": "tests/fixtures/smoke/fake/fake_05.png",
+    "label": "fake"
+  },
+  {
+    "path": "tests/fixtures/smoke/fake/fake_06.png",
+    "label": "fake"
+  },
+  {
+    "path": "tests/fixtures/smoke/fake/fake_07.png",
+    "label": "fake"
+  },
+  {
+    "path": "tests/fixtures/smoke/fake/fake_08.png",
+    "label": "fake"
+  },
+  {
+    "path": "tests/fixtures/smoke/fake/fake_09.png",
+    "label": "fake"
+  },
+  {
+    "path": "tests/fixtures/smoke/fake/fake_10.png",
+    "label": "fake"
+  }
+]

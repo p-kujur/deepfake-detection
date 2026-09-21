@@ -51,10 +51,12 @@ python scripts/download_weights.py
 
 Without probe weights the head is **randomly initialized** — CLI/API still run for wiring checks, but **predictions are not meaningful**.
 
-Smoke image fixtures (tiny synthetic PNGs, not a labeled eval set):
+Labeled M1 smoke pack (20 ProGAN/ForenSynths-style images under `tests/fixtures/smoke/`):
 
 ```bash
-python scripts/make_smoke_fixtures.py
+# already committed; rebuild with:
+# pip install datasets && python scripts/build_smoke_pack.py
+pytest tests/test_smoke_infer.py -q   # needs weights/unifd_clip_vit_l14_linear.pth
 ```
 
 ## Run
