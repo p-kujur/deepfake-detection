@@ -44,6 +44,7 @@ No Hugging Face / API tokens required for the default `open_clip` OpenAI CLIP we
 
 ```bash
 python scripts/download_weights.py
+# Default URL: Hugging Face mirror of UniFD fc_weights.pth (tiny linear head).
 # If download fails, the script prints Drive / manual instructions and exits non-zero.
 # Place a compatible Linear checkpoint at: weights/unifd_clip_vit_l14_linear.pth
 ```

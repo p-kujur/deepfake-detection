@@ -31,8 +31,10 @@ from pathlib import Path
 # Candidate direct URLs (tried in order). Drive links often need gdown;
 # we try HTTP mirrors first, then print Drive instructions on failure.
 UNIFD_WEIGHTS_URLS = [
-    # Placeholder mirror slots — update when a stable raw URL is confirmed.
-    # Community / project mirrors can be appended here.
+    # Community mirror of UniFD fc_weights.pth (CLIP ViT-L/14 linear head).
+    # Official UniFD repo expects pretrained_weights/fc_weights.pth; authors
+    # historically used Drive. This HF mirror is used by other open detectors.
+    "https://huggingface.co/siddharthksah/deepsafe-weights/resolve/main/universalfakedetect/fc_weights.pth",
 ]
 
 DEFAULT_OUT = Path("weights/unifd_clip_vit_l14_linear.pth")
