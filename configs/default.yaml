@@ -1,0 +1,31 @@
+# Default inference / eval config (M1 scaffold)
+model:
+  id: unifd-clip-vit-l14-linear
+  backbone: ViT-L-14
+  pretrained: openai
+  # Prefer open_clip; fallback transformers CLIPModel
+  backend: open_clip  # open_clip | transformers
+  freeze_backbone: true
+  # Optional linear probe checkpoint (from scripts/download_weights.py)
+  probe_weights: weights/unifd_clip_vit_l14_linear.pth
+  image_size: 224
+  threshold: 0.5
+
+infer:
+  device: auto  # auto | cpu | cuda | mps
+  dtype: float32
+
+metrics:
+  output_dir: artifacts/runs
+
+api:
+  host: 0.0.0.0
+  port: 8000
+
+gradio:
+  share: false
+  server_port: 7860
+
+notes: >
+  UniFD-inspired frozen CLIP ViT-L/14 + linear probe for AIGC still images.
+  Face-video branch is out of scope for v1. Scores are not authenticity guarantees.

@@ -1,0 +1,72 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+.venv/
+venv/
+env/
+ENV/
+
+# IDE / OS
+.idea/
+.vscode/
+*.swp
+.DS_Store
+Thumbs.db
+
+# Test / coverage
+.pytest_cache/
+.coverage
+htmlcov/
+.mypy_cache/
+.ruff_cache/
+
+# Model weights & large artifacts (keep .gitkeep)
+/artifacts/*
+!/artifacts/.gitkeep
+!/artifacts/runs/
+/artifacts/runs/*
+!/artifacts/runs/.gitkeep
+/weights/
+*.pt
+*.pth
+*.ckpt
+*.bin
+*.safetensors
+
+# Local data downloads (do not ignore package src/.../data/)
+/data/
+/datasets/
+
+# Loose media in repo root / scratch (fixtures allowed)
+*.jpg
+*.jpeg
+*.png
+*.webp
+!tests/fixtures/**
+!docs/**
+
+# Secrets
+.env
+.env.*
+*.pem
+
+# Jupyter
+.ipynb_checkpoints/
