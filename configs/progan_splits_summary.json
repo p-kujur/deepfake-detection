@@ -1,0 +1,24 @@
+{
+  "seed": 42,
+  "n_test_per_class": 200,
+  "n_val_per_class": 100,
+  "sources": {
+    "progan_eval_full": "datasets/progan_forensynths/progan_eval_full",
+    "frp94_train": "datasets/progan_forensynths/frp94_train"
+  },
+  "notes": "Train = ProGAN-Eval remainder + frp94/progan_val train. Test = ProGAN-Eval holdout (in-domain). Hemg / CIFAKE never in train. Shuffle seed stratified per class.",
+  "counts": {
+    "train": {
+      "n_real": 949,
+      "n_fake": 972
+    },
+    "val": {
+      "n_real": 100,
+      "n_fake": 100
+    },
+    "test": {
+      "n_real": 200,
+      "n_fake": 200
+    }
+  }
+}

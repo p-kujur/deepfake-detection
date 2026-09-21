@@ -179,6 +179,11 @@ deepfake-detection/
 - [x] Robustness suite (JPEG q=70, resize-short=128)
 - [x] Document failure modes / NPR path (`docs/m3_crossgen.md`, `docs/npr_integration.md`)
 
+### M3b — ProGAN domain close (post-M3)
+- [x] Train frozen CLIP probe on ProGAN-Eval + frp94 train (documented splits)
+- [x] In-domain ProGAN holdout + Hemg cross-gen + CIFAKE tradeoff
+- [x] Docs: `docs/m3b_progan_probe.md` (Hemg AUC 0.78; ≥0.80 **missed**)
+
 ### M4 — Product wrap (week 4)
 - [ ] `detect` CLI + FastAPI `POST /detect`
 - [ ] Gradio demo

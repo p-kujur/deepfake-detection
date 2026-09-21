@@ -1,7 +1,11 @@
-"""Train UniFD-style linear probe on frozen CLIP features (CIFAKE M2).
+"""Train UniFD-style linear probe on frozen CLIP features.
+
+Supports:
+  - CIFAKE (M2): ``data.name: cifake`` + HF cache
+  - Folder packs (M3b ProGAN): ``data.name: progan_folder`` with train/test roots
 
 Pipeline:
-  1. Load CIFAKE train/test (optional subset via config / CLI).
+  1. Load train/test images (CIFAKE or real/fake folders).
   2. Extract frozen CLIP ViT-L/14 embeddings (cached under artifacts/).
   3. Fit ``nn.Linear(embed_dim, 1)`` with BCE-with-logits.
   4. Eval Acc / AP / AUC on the test holdout; write metrics.json.
@@ -29,6 +33,7 @@ from tqdm import tqdm
 
 from deepfake_detection import __model_id__
 from deepfake_detection.data.cifake import CIFAKEDataset, DEFAULT_CACHE_DIR, DEFAULT_HF_ID
+from deepfake_detection.data.folder_dataset import RealFakeFolderDataset
 from deepfake_detection.data.transforms import build_clip_preprocess, build_train_preprocess
 from deepfake_detection.metrics import MetricsRecord, write_metrics
 from deepfake_detection.models.unifd import UniFDClipLinear, resolve_device
@@ -214,22 +219,41 @@ def run_training(cfg: dict[str, Any]) -> dict[str, Any]:
     )
     test_tf = build_clip_preprocess(image_size)
 
-    train_ds = CIFAKEDataset(
-        split="train",
-        transform=train_tf,
-        hf_id=hf_id,
-        cache_dir=cache_dir,
-        max_samples=int(max_train) if max_train else None,
-        seed=seed,
-    )
-    test_ds = CIFAKEDataset(
-        split="test",
-        transform=test_tf,
-        hf_id=hf_id,
-        cache_dir=cache_dir,
-        max_samples=int(max_test) if max_test else None,
-        seed=seed,
-    )
+    data_name = str(data_cfg.get("name", "cifake")).lower()
+    if data_name in ("progan_folder", "folder", "real_fake_folder"):
+        train_root = Path(data_cfg["train_root"])
+        test_root = Path(data_cfg.get("test_root") or data_cfg.get("val_root") or "")
+        if not test_root:
+            raise ValueError("progan_folder requires data.test_root (or val_root)")
+        train_ds = RealFakeFolderDataset(
+            train_root,
+            transform=train_tf,
+            max_per_class=int(max_train) if max_train else None,
+            seed=seed,
+        )
+        test_ds = RealFakeFolderDataset(
+            test_root,
+            transform=test_tf,
+            max_per_class=int(max_test) if max_test else None,
+            seed=seed,
+        )
+    else:
+        train_ds = CIFAKEDataset(
+            split="train",
+            transform=train_tf,
+            hf_id=hf_id,
+            cache_dir=cache_dir,
+            max_samples=int(max_train) if max_train else None,
+            seed=seed,
+        )
+        test_ds = CIFAKEDataset(
+            split="test",
+            transform=test_tf,
+            hf_id=hf_id,
+            cache_dir=cache_dir,
+            max_samples=int(max_test) if max_test else None,
+            seed=seed,
+        )
 
     train_loader = DataLoader(
         train_ds,
@@ -257,7 +281,8 @@ def run_training(cfg: dict[str, Any]) -> dict[str, Any]:
     subset_tag = f"tr{len(train_ds)}_te{len(test_ds)}"
     cache_root = Path(train_cfg.get("feature_cache_dir", "artifacts/feature_cache"))
     cache_root.mkdir(parents=True, exist_ok=True)
-    feat_path = cache_root / f"cifake_{subset_tag}_seed{seed}_sz{image_size}.pt"
+    cache_prefix = "progan" if data_name in ("progan_folder", "folder", "real_fake_folder") else "cifake"
+    feat_path = cache_root / f"{cache_prefix}_{subset_tag}_seed{seed}_sz{image_size}.pt"
 
     if feat_path.is_file() and not bool(train_cfg.get("force_reextract", False)) and not use_aug:
         logger.info("Loading cached features %s", feat_path)
@@ -302,18 +327,28 @@ def run_training(cfg: dict[str, Any]) -> dict[str, Any]:
     lat_p95 = float(np.percentile(latencies, 95)) if latencies else None
 
     is_subset = max_train is not None or max_test is not None
-    dataset_name = "cifake_subset" if is_subset else "cifake"
+    if data_name in ("progan_folder", "folder", "real_fake_folder"):
+        dataset_name = "progan_holdout" if not is_subset else "progan_holdout_subset"
+        ckpt_tag = "progan_probe"
+        default_weights = "weights/progan_clip_vit_l14_linear.pth"
+    else:
+        dataset_name = "cifake_subset" if is_subset else "cifake"
+        ckpt_tag = "cifake_probe"
+        default_weights = "weights/cifake_clip_vit_l14_linear.pth"
     cfg_hash = _config_hash(cfg)
 
     run_id = time.strftime("%Y%m%d-%H%M%S") + "-" + uuid.uuid4().hex[:8]
     out_dir = Path(metrics_cfg.get("output_dir", "artifacts/runs"))
     ckpt_dir = Path(train_cfg.get("checkpoint_dir", "artifacts/checkpoints"))
-    ckpt_path = ckpt_dir / f"{run_id}_cifake_probe.pth"
-    weights_copy = Path(train_cfg.get("weights_out", "weights/cifake_clip_vit_l14_linear.pth"))
+    ckpt_path = ckpt_dir / f"{run_id}_{ckpt_tag}.pth"
+    weights_copy = Path(train_cfg.get("weights_out", default_weights))
 
     meta = {
         "dataset": dataset_name,
-        "hf_id": hf_id,
+        "data_name": data_name,
+        "hf_id": hf_id if data_name.startswith("cifake") else None,
+        "train_root": data_cfg.get("train_root"),
+        "test_root": data_cfg.get("test_root"),
         "max_train": max_train,
         "max_test": max_test,
         "n_train": len(train_ds),
@@ -331,8 +366,8 @@ def run_training(cfg: dict[str, Any]) -> dict[str, Any]:
     )
 
     notes = (
-        f"M2 linear probe on frozen CLIP; "
-        f"{'SUBSET' if is_subset else 'FULL'} CIFAKE "
+        f"Linear probe on frozen CLIP; data={dataset_name}; "
+        f"{'SUBSET' if is_subset else 'FULL'} "
         f"(train={len(train_ds)} test={len(test_ds)}); "
         f"ckpt={ckpt_path.as_posix()}; aug={use_aug}"
     )
@@ -388,7 +423,7 @@ def main(argv: list[str] | None = None) -> int:
         level=logging.INFO,
         format="%(asctime)s %(levelname)s %(name)s: %(message)s",
     )
-    parser = argparse.ArgumentParser(description="Train CLIP linear probe on CIFAKE")
+    parser = argparse.ArgumentParser(description="Train CLIP linear probe (CIFAKE or ProGAN folders)")
     parser.add_argument(
         "--config",
         default="configs/train_cifake_subset.yaml",

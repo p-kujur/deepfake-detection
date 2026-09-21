@@ -1,4 +1,4 @@
-# Deepfake Detection (M1–M2)
+# Deepfake Detection (M1–M3b)
 
 AIGC **still-image** detector scaffold: frozen **CLIP ViT-L/14** + **linear probe** (UniFD-inspired), with CLI, FastAPI, and Gradio stubs.
 
@@ -93,6 +93,20 @@ python -m deepfake_detection.eval.run_eval --dataset cifake --probe-weights weig
 
 Contract fields: `dataset`, `split`, `model_id`, `acc`, `ap`, `auc`, `n`, `threshold`, `latency_p50_ms`, `latency_p95_ms`, `aug`, `git_commit`, `config_hash`.
 
+
+
+## M3b — ProGAN probe (domain close)
+
+```bash
+python scripts/download_progan_train.py --sources progan_eval frp94_train
+python scripts/make_progan_splits.py
+python -m deepfake_detection.train.probe --config configs/train_progan_subset.yaml
+python -m deepfake_detection.eval.cross_gen \
+  --probe-weights weights/progan_clip_vit_l14_linear.pth \
+  --packs progan_holdout hemg_wild --skip-npr --skip-robustness
+```
+
+See `docs/m3b_progan_probe.md`. Cross-gen Hemg AUC **0.78** (target ≥0.80 **not met**); ProGAN holdout AUC ≈1.0; CIFAKE tradeoff AUC ≈0.39.
 
 ## M3 — Cross-generator + NPR-lite
 

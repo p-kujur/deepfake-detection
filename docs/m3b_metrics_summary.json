@@ -1,0 +1,18 @@
+{
+  "milestone": "M3b",
+  "date_ist": "2026-09-21",
+  "target_cross_gen_auc": 0.80,
+  "target_met": false,
+  "probe": {
+    "weights": "weights/progan_clip_vit_l14_linear.pth",
+    "train_n": 1921,
+    "sources": ["Oliver1515/ProGAN-Eval split remainder", "frp94/progan_val train"],
+    "train_run_id": "20260921-222903-cfd86aa4"
+  },
+  "tables": {
+    "progan_holdout": {"acc": 0.9875, "ap": 0.9997, "auc": 0.9997, "n": 400},
+    "hemg_wild_cross": {"acc": 0.5706, "ap": 0.8128, "auc": 0.7798, "n": 177},
+    "cifake_tradeoff_subset": {"acc": 0.4215, "ap": 0.4188, "auc": 0.3915, "n": 2000},
+    "m3_baseline_hemg_cifake_probe": {"acc": 0.481, "ap": 0.462, "auc": 0.456, "n": 160}
+  }
+}

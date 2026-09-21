@@ -10,7 +10,7 @@ model:
 
 data:
   root: datasets/crossgen
-  packs: [progan_eval, hemg_wild]
+  packs: [progan_holdout, hemg_wild]
   max_per_class: null
 
 robustness:
@@ -22,4 +22,4 @@ fusion:
 
 notes: >
   Cross-gen packs: ProGAN-Eval (GAN family) and Hemg wild AI-art (Midjourney-style).
-  CIFAKE probe trained on SD1.4 32x32 — these are unseen generator families.
+  Default packs for ProGAN-trained probe: in-domain holdout + Hemg cross-gen. Use progan_eval for legacy M3 CIFAKE-probe comparison.

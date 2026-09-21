@@ -1,0 +1,46 @@
+# M3b — UniFD-style linear probe on ProGAN / ForenSynths-style data (domain close).
+# Train source: ProGAN-Eval split remainder + frp94/progan_val train.
+# Holdout test: ProGAN-Eval stratified holdout (see configs/progan_splits_summary.json).
+# Cross-gen eval: Hemg wild (never in train). CIFAKE re-eval for in-domain tradeoff.
+seed: 42
+
+model:
+  id: unifd-clip-vit-l14-linear-progan
+  backbone: ViT-L-14
+  pretrained: openai
+  backend: open_clip
+  freeze_backbone: true
+  image_size: 224
+  threshold: 0.5
+
+data:
+  name: progan_folder
+  train_root: datasets/progan_forensynths/splits/train
+  val_root: datasets/progan_forensynths/splits/val
+  test_root: datasets/progan_forensynths/splits/test
+  # null = use all images in the split folders
+  max_train: null
+  max_test: null
+
+train:
+  device: auto
+  batch_size: 8
+  num_workers: 0
+  epochs: 20
+  lr: 0.001
+  weight_decay: 0.0
+  probe_batch_size: 512
+  aug: true
+  jpeg_prob: 0.5
+  blur_prob: 0.1
+  feature_cache_dir: artifacts/feature_cache
+  checkpoint_dir: artifacts/checkpoints
+  weights_out: weights/progan_clip_vit_l14_linear.pth
+  force_reextract: false
+
+metrics:
+  output_dir: artifacts/runs
+
+notes: >
+  Close CIFAKE→ProGAN domain gap the UniFD way: train frozen-CLIP linear probe on
+  ProGAN-family data. Report holdout in-domain + Hemg cross-gen + CIFAKE tradeoff.
