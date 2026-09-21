@@ -25,9 +25,10 @@ from deepfake_detection.data.transforms import build_clip_preprocess, load_image
 logger = logging.getLogger(__name__)
 
 DEFAULT_NOTES = (
-    "UniFD-style frozen CLIP ViT-L/14 + linear probe for AIGC still images. "
-    "Not a guarantee of authenticity; face-video is out of scope for v1. "
-    "Calibration and cross-generator robustness vary by domain."
+    "Experimental AIGC still-image score — not court-grade authenticity evidence. "
+    "M3 near-miss: best Hemg cross-gen AUC ≈0.78 with the ProGAN-trained probe; "
+    "CIFAKE tradeoff when using that probe (AUC ≈0.39). "
+    "Cross-generator limits remain; face-video out of scope for v1."
 )
 
 
@@ -252,6 +253,7 @@ def detect_image(
     probe_weights: str | Path | None = None,
     backend: str = "open_clip",
     notes: str | None = None,
+    model_id: str | None = None,
 ) -> DetectResult:
     """Run detection on a single image path; return structured result."""
     if model is None:
@@ -269,10 +271,18 @@ def detect_image(
         p_fake = float(model.predict_proba(batch)[0].item())
 
     label = "fake" if p_fake >= threshold else "real"
+    mid = model_id or __model_id__
+    if model_id is None and probe_weights:
+        try:
+            from deepfake_detection.infer.resolve import model_id_for_weights
+
+            mid = model_id_for_weights(probe_weights)
+        except Exception:
+            mid = __model_id__
     return DetectResult(
         p_fake=round(p_fake, 6),
         label=label,
-        model_id=__model_id__,
+        model_id=mid,
         notes=notes or DEFAULT_NOTES,
         version=__version__,
     )

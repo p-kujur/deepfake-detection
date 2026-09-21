@@ -1,6 +1,12 @@
 #!/usr/bin/env python3
 """Download optional UniFD-style linear probe weights.
 
+Product default probe preference (see deepfake_detection.infer.resolve):
+  1. weights/progan_clip_vit_l14_linear.pth  (train ProGAN probe)
+  2. weights/unifd_clip_vit_l14_linear.pth   (this script)
+  3. weights/cifake_clip_vit_l14_linear.pth  (train CIFAKE probe)
+
+
 UniFD (UniversalFakeDetect) official repo:
   https://github.com/WisconsinAIVision/UniversalFakeDetect
 

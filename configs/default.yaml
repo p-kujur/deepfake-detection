@@ -1,19 +1,22 @@
-# Default inference / eval config (M1 scaffold)
+# Default inference / eval config (M4 product wrap)
 model:
-  id: unifd-clip-vit-l14-linear
+  # Resolved at runtime from available files; model_id follows the loaded probe.
+  id: auto
   backbone: ViT-L-14
   pretrained: openai
-  # Prefer open_clip; fallback transformers CLIPModel
   backend: open_clip  # open_clip | transformers
   freeze_backbone: true
-  # Optional linear probe checkpoint (from scripts/download_weights.py)
-  probe_weights: weights/unifd_clip_vit_l14_linear.pth
+  # auto → prefer ProGAN, then UniFD HF, then CIFAKE (see infer.resolve)
+  probe_weights: auto
+  cifake_weights: weights/cifake_clip_vit_l14_linear.pth
   image_size: 224
   threshold: 0.5
 
 infer:
   device: auto  # auto | cpu | cuda | mps
   dtype: float32
+  # Optional product ensemble (also CLI --ensemble soft_router / Gradio dropdown)
+  ensemble: null  # null | soft_router
 
 metrics:
   output_dir: artifacts/runs
@@ -27,5 +30,7 @@ gradio:
   server_port: 7860
 
 notes: >
-  UniFD-inspired frozen CLIP ViT-L/14 + linear probe for AIGC still images.
-  Face-video branch is out of scope for v1. Scores are not authenticity guarantees.
+  Experimental AIGC still-image score — not court-grade authenticity evidence.
+  M3 near-miss: best Hemg cross-gen AUC ≈0.78 with the ProGAN-trained probe;
+  CIFAKE domain tradeoff when using that probe (AUC ≈0.39). Cross-generator
+  limits remain; do not treat scores as ≥0.80 cross-gen.
