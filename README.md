@@ -161,3 +161,13 @@ python -m deepfake_detection.eval.dual_probe \
 ## License
 
 MIT for this repository’s original code. Upstream CLIP / UniFD / dataset licenses remain their own.
+
+## Web demo (Hugging Face Space + Vercel)
+
+- `space/` — Gradio app for the Hugging Face Space `ezra9426/deepfake-detector`
+  (CPU torch, CLIP ViT-L/14 + ProGAN probe, optional `soft_router`). Run
+  `space/prepare.sh` to vendor `src/` and the probe weights, then upload `space/`.
+  API: `/predict(image, ensemble)` → `{p_fake, label, model_id, notes, version}`.
+- `web/` — static frontend (HTML + `@gradio/client` from a CDN) deployed on Vercel.
+  The root `vercel.json` serves `web/` as static output; Vercel does not build the
+  Python package (torch + CLIP exceed Vercel's function size limit).
