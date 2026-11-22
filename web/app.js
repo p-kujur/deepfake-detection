@@ -1,5 +1,5 @@
 // Modal endpoint (set after `modal deploy modal_app/app.py`). Override with ?api=<base-url>.
-const DEFAULT_API = "https://WORKSPACE--deepfake-detector-detector-web.modal.run";
+const DEFAULT_API = "https://p-kujur--deepfake-detector-detector-web.us-east.modal.run";
 const API = (new URLSearchParams(location.search).get("api") || DEFAULT_API).replace(/\/+$/, "");
 const MAX_BYTES = 10 * 1024 * 1024;
 const $ = (id) => document.getElementById(id);
