@@ -162,12 +162,15 @@ python -m deepfake_detection.eval.dual_probe \
 
 MIT for this repository’s original code. Upstream CLIP / UniFD / dataset licenses remain their own.
 
-## Web demo (Hugging Face Space + Vercel)
+## Web demo (Modal API + Vercel)
 
-- `space/` — Gradio app for the Hugging Face Space `ezra9426/deepfake-detector`
-  (CPU torch, CLIP ViT-L/14 + ProGAN probe, optional `soft_router`). Run
-  `space/prepare.sh` to vendor `src/` and the probe weights, then upload `space/`.
-  API: `/predict(image, ensemble)` → `{p_fake, label, model_id, notes, version}`.
-- `web/` — static frontend (HTML + `@gradio/client` from a CDN) deployed on Vercel.
-  The root `vercel.json` serves `web/` as static output; Vercel does not build the
-  Python package (torch + CLIP exceed Vercel's function size limit).
+- `modal_app/` — FastAPI inference API on Modal (CPU, CLIP baked into the image).
+  Deploy with `modal deploy modal_app/app.py`; endpoint
+  `https://<workspace>--deepfake-detector-detector-web.modal.run` (`GET /health`,
+  `POST /detect`). See `modal_app/README.md`.
+- `web/` — static frontend (HTML + `fetch()` multipart to `/detect`) deployed on Vercel.
+  Set `DEFAULT_API` in `web/app.js`, or pass `?api=<url>`. The root `vercel.json`
+  serves `web/` as static output; Vercel does not build the Python package (torch +
+  CLIP exceed Vercel's function size limit).
+- `space/` — Gradio app for a Hugging Face Space. Not deployed: Hugging Face now
+  requires PRO for free cpu-basic Gradio/Docker Spaces, so Modal is used instead.

@@ -1,11 +1,11 @@
-import { Client } from "https://cdn.jsdelivr.net/npm/@gradio/client@1.19.1/dist/index.min.js";
-
-const SPACE = new URLSearchParams(location.search).get("space") || "ezra9426/deepfake-detector";
+// Modal endpoint (set after `modal deploy modal_app/app.py`). Override with ?api=<base-url>.
+const DEFAULT_API = "https://WORKSPACE--deepfake-detector-detector-web.modal.run";
+const API = (new URLSearchParams(location.search).get("api") || DEFAULT_API).replace(/\/+$/, "");
+const MAX_BYTES = 10 * 1024 * 1024;
 const $ = (id) => document.getElementById(id);
 const fileIn = $("file"), drop = $("drop"), preview = $("preview"), dropText = $("dropText");
 const runBtn = $("run"), status = $("status"), model = $("model");
 let file = null;
-let clientPromise = null;
 
 function setFile(f) {
   if (!f || !f.type.startsWith("image/")) return;
@@ -24,18 +24,6 @@ fileIn.addEventListener("change", () => setFile(fileIn.files[0]));
 ["dragleave", "drop"].forEach((e) =>
   drop.addEventListener(e, (ev) => { ev.preventDefault(); drop.classList.remove("over"); }));
 drop.addEventListener("drop", (ev) => setFile(ev.dataTransfer.files[0]));
-
-function getClient() {
-  if (!clientPromise) {
-    clientPromise = Client.connect(SPACE, {
-      status_callback: (s) => {
-        if (s.status === "sleeping" || s.status === "starting" || s.stage === "pending")
-          status.textContent = "Waking the Space up… the first request can take about a minute.";
-      },
-    }).catch((e) => { clientPromise = null; throw e; });
-  }
-  return clientPromise;
-}
 
 function show(r) {
   const p = Math.max(0, Math.min(1, Number(r.p_fake)));
@@ -58,12 +46,16 @@ runBtn.addEventListener("click", async () => {
   if (!file) return;
   runBtn.disabled = true;
   runBtn.classList.add("loading");
-  status.textContent = "Connecting… if the Space is asleep, the first request can take about a minute.";
+  status.textContent = "Analysing… if the server is asleep, the first request can take about a minute while it wakes.";
   try {
-    const app = await getClient();
-    status.textContent = "Analysing image…";
-    const res = await app.predict("/predict", { image: file, ensemble: model.value });
-    const r = res.data[0];
+    if (file.size > MAX_BYTES) throw new Error("Image is larger than 10 MB");
+    const body = new FormData();
+    body.append("file", file, file.name || "image");
+    body.append("ensemble", model.value);
+    const resp = await fetch(`${API}/detect`, { method: "POST", body });
+    let r = null;
+    try { r = await resp.json(); } catch { /* non-JSON error page */ }
+    if (!resp.ok) throw new Error(r?.detail || `Server error ${resp.status}`);
     if (!r || r.error) throw new Error(r?.error || "Empty response");
     show(r);
     status.textContent = "";

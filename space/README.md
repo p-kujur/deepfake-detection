@@ -14,6 +14,8 @@ short_description: AIGC still-image detector (CLIP ViT-L/14 + linear probe)
 
 # Deepfake / AIGC still-image detector
 
+> Not deployed: Hugging Face now requires PRO for cpu-basic Gradio Spaces. The live API runs on Modal (see `modal_app/`).
+
 Scores whether a still image is AI-generated. Frozen OpenAI **CLIP ViT-L/14**
 (downloaded by `open_clip` on first start) plus a small linear probe trained on
 ProGAN fakes (`weights/progan_clip_vit_l14_linear.pth`). Optional
