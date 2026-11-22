@@ -6,7 +6,7 @@ Used by modal_app/app.py on Modal, and runnable locally with uvicorn:
 
 Endpoints:
     GET  /health
-    POST /detect  multipart: file=<image>, ensemble=none|soft_router (optional)
+    POST /detect  multipart: file=<image>, ensemble=none|progan|soft_router (optional)
          -> {p_fake, label, model_id, notes, version}
 """
 
@@ -23,7 +23,7 @@ from starlette.concurrency import run_in_threadpool
 
 MAX_UPLOAD_BYTES = 10 * 1024 * 1024  # 10 MB
 THRESHOLD = 0.5
-ENSEMBLES = ("none", "soft_router")
+ENSEMBLES = ("none", "progan", "soft_router")
 
 
 def _weights_dir() -> Path:
@@ -34,47 +34,85 @@ def _weights_dir() -> Path:
 
 
 class Detector:
-    """Frozen CLIP ViT-L/14 + ProGAN linear probe; CIFAKE head enables soft_router."""
+    """Frozen CLIP ViT-L/14 loaded once + linear heads applied to the same features.
+
+    ensemble=none        -> default head (modern M5 probe if present, else ProGAN)
+    ensemble=progan      -> legacy ProGAN-only probe (M3b)
+    ensemble=soft_router -> ProGAN + CIFAKE dual probe (M3c)
+    """
 
     def __init__(self, weights_dir: str | Path | None = None, device: str = "cpu") -> None:
+        from deepfake_detection.infer.pipeline import _load_linear_head
         from deepfake_detection.infer.resolve import model_id_for_weights
         from deepfake_detection.models.unifd import load_detector
 
         wd = Path(weights_dir) if weights_dir else _weights_dir()
+        self.modern = wd / "modern_clip_vit_l14_linear.pth"
         self.progan = wd / "progan_clip_vit_l14_linear.pth"
         self.cifake = wd / "cifake_clip_vit_l14_linear.pth"
-        found = self.progan.is_file()
-        self.model, _ = load_detector(
-            probe_weights=self.progan if found else None,
-            backend="open_clip",
-            device=device,
-            require_weights=False,
+        self.model, self.device = load_detector(
+            probe_weights=None, backend="open_clip", device=device, require_weights=False
         )
-        mid = model_id_for_weights(self.progan)
-        self.model_id = mid if found else f"{mid}-untrained"
-        self.has_router = found and self.cifake.is_file()
+        self.heads: dict[str, Any] = {}
+        for key, path in (("modern", self.modern), ("progan", self.progan), ("cifake", self.cifake)):
+            if path.is_file():
+                self.heads[key] = _load_linear_head(path, embed_dim=int(self.model.embed_dim)).to(self.device)
+        self.default_key = "modern" if "modern" in self.heads else "progan"
+        default_path = self.modern if self.default_key == "modern" else self.progan
+        mid = model_id_for_weights(default_path)
+        self.model_id = mid if self.default_key in self.heads else f"{mid}-untrained"
+        self.has_progan = "progan" in self.heads
+        self.has_router = self.has_progan and "cifake" in self.heads
+
+    def ensembles(self) -> list[str]:
+        out = ["none"]
+        if self.has_progan and self.default_key != "progan":
+            out.append("progan")
+        if self.has_router:
+            out.append("soft_router")
+        return out
 
     def predict(self, image_path: str | Path, ensemble: str | None = None) -> dict[str, Any]:
-        from deepfake_detection.infer.pipeline import run_detect
+        import numpy as np
+        import torch
 
-        mode = None if ensemble in (None, "", "none", "off") else ensemble
-        if mode == "soft_router":
-            return run_detect(
-                image_path,
-                ensemble="soft_router",
-                probe_weights=self.progan,
-                cifake_weights=self.cifake,
-                model=self.model,  # reuse loaded CLIP; only the CIFAKE head is added
-                threshold=THRESHOLD,
-            ).to_dict()
-        return run_detect(
-            image_path,
-            ensemble=None,
-            probe_weights=self.progan,
-            model=self.model,
-            threshold=THRESHOLD,
-            model_id=self.model_id,
-        ).to_dict()
+        from deepfake_detection import __version__
+        from deepfake_detection.data.transforms import build_clip_preprocess, load_image, tensor_batch
+        from deepfake_detection.eval.dual_probe import soft_confidence_mix
+        from deepfake_detection.infer.resolve import ENSEMBLE_MODEL_ID, model_id_for_weights, product_notes
+
+        mode = "none" if ensemble in (None, "", "none", "off") else ensemble
+        img = load_image(image_path)
+        batch = tensor_batch(img, build_clip_preprocess(224), device=str(self.device))
+        with torch.inference_mode():
+            feats = self.model._encode_image(batch)
+            if feats.ndim > 2:
+                feats = feats.flatten(1)
+            feats = feats.float()
+
+            def logit(key: str) -> float:
+                return float(self.heads[key](feats).squeeze().cpu())
+
+            if mode == "soft_router":
+                p = float(np.asarray(soft_confidence_mix(np.array([logit("progan")]),
+                                                         np.array([logit("cifake")]))).reshape(-1)[0])
+                mid = ENSEMBLE_MODEL_ID
+            elif mode == "progan":
+                p = float(torch.sigmoid(torch.tensor(logit("progan"))))
+                mid = model_id_for_weights(self.progan)
+            elif self.default_key in self.heads:
+                p = float(torch.sigmoid(torch.tensor(logit(self.default_key))))
+                mid = self.model_id
+            else:  # no weights at all: untrained head (kept for parity with v1 behaviour)
+                p = float(torch.sigmoid(self.model.head(feats)).squeeze().cpu())
+                mid = self.model_id
+        return {
+            "p_fake": round(p, 6),
+            "label": "fake" if p >= THRESHOLD else "real",
+            "model_id": mid,
+            "notes": product_notes(),
+            "version": __version__,
+        }
 
 
 def create_app(detector: Detector) -> FastAPI:
@@ -100,7 +138,7 @@ def create_app(detector: Detector) -> FastAPI:
         return {
             "status": "ok",
             "model_id": detector.model_id,
-            "ensembles": list(ENSEMBLES) if detector.has_router else ["none"],
+            "ensembles": detector.ensembles(),
             "version": __version__,
         }
 
@@ -112,8 +150,8 @@ def create_app(detector: Detector) -> FastAPI:
         ensemble = (ensemble or "none").strip()
         if ensemble not in ENSEMBLES:
             raise HTTPException(400, f"ensemble must be one of {ENSEMBLES}")
-        if ensemble == "soft_router" and not detector.has_router:
-            raise HTTPException(400, "soft_router needs ProGAN + CIFAKE weights")
+        if ensemble not in detector.ensembles():
+            raise HTTPException(400, f"{ensemble} is not available on this server")
         data = await file.read(MAX_UPLOAD_BYTES + 1)
         if len(data) > MAX_UPLOAD_BYTES:
             raise HTTPException(413, "Image too large (max 10 MB)")

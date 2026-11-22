@@ -39,6 +39,9 @@ def test_product_notes_mention_near_miss():
 
 
 def test_model_id_for_weights():
+    assert model_id_for_weights("weights/modern_clip_vit_l14_linear.pth") == (
+        "modern-clip-vit-l14-linear"
+    )
     assert model_id_for_weights("weights/progan_clip_vit_l14_linear.pth") == (
         "progan-clip-vit-l14-linear"
     )
@@ -66,10 +69,15 @@ def test_resolve_preference_order(tmp_path, monkeypatch):
     path, mid, found = resolve_default_probe_weights(None)
     assert mid == "unifd-clip-vit-l14-linear"
 
-    # Add ProGAN → top preference
+    # Add ProGAN → preferred over UniFD
     (weights / "progan_clip_vit_l14_linear.pth").write_bytes(b"x" * 100)
     path, mid, found = resolve_default_probe_weights(None)
     assert mid == "progan-clip-vit-l14-linear"
+
+    # Add M5 modern probe → top preference
+    (weights / "modern_clip_vit_l14_linear.pth").write_bytes(b"x" * 100)
+    path, mid, found = resolve_default_probe_weights(None)
+    assert mid == "modern-clip-vit-l14-linear"
 
 
 def test_resolve_explicit_missing(tmp_path, monkeypatch):

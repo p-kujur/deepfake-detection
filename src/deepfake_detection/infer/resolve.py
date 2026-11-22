@@ -1,9 +1,10 @@
 """Default probe weight resolution and shared product notes (M4).
 
 Preference order for single-probe demo:
-  1. weights/progan_clip_vit_l14_linear.pth  (best Hemg cross-gen among shipped heads)
-  2. weights/unifd_clip_vit_l14_linear.pth   (HF UniFD mirror)
-  3. weights/cifake_clip_vit_l14_linear.pth  (CIFAKE in-domain)
+  1. weights/modern_clip_vit_l14_linear.pth  (M5: OpenFake modern generators + ProGAN)
+  2. weights/progan_clip_vit_l14_linear.pth  (M3b ProGAN-only probe, legacy default)
+  3. weights/unifd_clip_vit_l14_linear.pth   (HF UniFD mirror)
+  4. weights/cifake_clip_vit_l14_linear.pth  (CIFAKE in-domain)
 
 Optional --ensemble soft_router uses ProGAN + CIFAKE heads together
 (model_id=dual-probe-soft_router). That preserves CIFAKE but does **not**
@@ -16,31 +17,37 @@ from pathlib import Path
 
 from deepfake_detection import __version__
 
-# Preference: ProGAN → UniFD HF → CIFAKE
+# Preference: modern (M5) → ProGAN → UniFD HF → CIFAKE
 WEIGHT_CANDIDATES: list[tuple[str, Path]] = [
+    ("modern-clip-vit-l14-linear", Path("weights/modern_clip_vit_l14_linear.pth")),
     ("progan-clip-vit-l14-linear", Path("weights/progan_clip_vit_l14_linear.pth")),
     ("unifd-clip-vit-l14-linear", Path("weights/unifd_clip_vit_l14_linear.pth")),
     ("cifake-clip-vit-l14-linear", Path("weights/cifake_clip_vit_l14_linear.pth")),
 ]
 
-PROGAN_WEIGHTS = WEIGHT_CANDIDATES[0][1]
-CIFAKE_WEIGHTS = WEIGHT_CANDIDATES[2][1]
+MODERN_WEIGHTS = WEIGHT_CANDIDATES[0][1]
+PROGAN_WEIGHTS = WEIGHT_CANDIDATES[1][1]
+CIFAKE_WEIGHTS = WEIGHT_CANDIDATES[3][1]
 
 ENSEMBLE_MODEL_ID = "dual-probe-soft_router"
 
 # Honest product caveats — M3 near-miss must stay visible.
 PRODUCT_NOTES = (
     "Experimental AIGC still-image score — not court-grade authenticity evidence. "
-    "M3 near-miss: best Hemg cross-gen AUC ≈0.78 with the ProGAN-trained probe; "
-    "that same probe has a severe CIFAKE domain tradeoff (AUC ≈0.39). "
-    "Cross-generator generalisation is limited; do not treat scores as ≥0.80 cross-gen. "
-    "Optional soft_router dual-probe preserves CIFAKE≈0.97 and ProGAN holdout≈0.997 "
-    "but does not beat ProGAN-only on Hemg. Face-video is out of scope for v1."
+    "Default (M5) modern probe: CLIP ViT-L/14 + linear head trained on OpenFake modern "
+    "generators + ProGAN (training data CC-BY-NC-4.0). Held-out OpenFake generators AUC ≈0.94-0.95, "
+    "Hemg cross-gen AUC ≈0.83 (legacy ProGAN-only probe ≈0.78). "
+    "More false positives than the old probe: ~12% of real photos flagged (up to ~22% on "
+    "high-res DOCCI photos) and drawings/digital art often called AI. Weak on Ideogram, "
+    "Recraft v3 and CIFAKE-style tiny images (legacy ProGAN probe CIFAKE AUC ≈0.39). "
+    "Optional: progan (old default) or soft_router (ProGAN + CIFAKE). "
+    "Do not treat scores as ≥0.80 accurate on every unseen generator. Face-video is out of scope."
 )
 
 SCHEMA_KEYS = ("p_fake", "label", "model_id", "notes", "version")
 
 _STEM_TO_ID = {
+    "modern_clip_vit_l14_linear": "modern-clip-vit-l14-linear",
     "progan_clip_vit_l14_linear": "progan-clip-vit-l14-linear",
     "unifd_clip_vit_l14_linear": "unifd-clip-vit-l14-linear",
     "cifake_clip_vit_l14_linear": "cifake-clip-vit-l14-linear",
@@ -76,8 +83,8 @@ def resolve_default_probe_weights(
         if cand.is_file():
             return cand, mid, True
 
-    # Nothing on disk — advertise preferred ProGAN path as the missing default.
-    return PROGAN_WEIGHTS, WEIGHT_CANDIDATES[0][0], False
+    # Nothing on disk — advertise the preferred (modern) path as the missing default.
+    return MODERN_WEIGHTS, WEIGHT_CANDIDATES[0][0], False
 
 
 def resolve_ensemble_weights(

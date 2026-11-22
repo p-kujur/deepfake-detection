@@ -5,7 +5,7 @@ Deploy (from the repo root, with MODAL_TOKEN_ID / MODAL_TOKEN_SECRET set):
     modal deploy modal_app/app.py
 
 Serves FastAPI at https://<workspace>--deepfake-detector-detector-web.modal.run
-    GET /health, POST /detect (multipart file + optional ensemble=none|soft_router)
+    GET /health, POST /detect (multipart file + optional ensemble=none|progan|soft_router)
 """
 
 from __future__ import annotations
@@ -53,6 +53,8 @@ image = (
     # copy=True so the package is available to the build-time CLIP download step
     .add_local_python_source("deepfake_detection", copy=True)
     .run_function(_bake_clip)
+    .add_local_file(ROOT / "weights" / "modern_clip_vit_l14_linear.pth",
+                    f"{REMOTE_WEIGHTS}/modern_clip_vit_l14_linear.pth")
     .add_local_file(ROOT / "weights" / "progan_clip_vit_l14_linear.pth",
                     f"{REMOTE_WEIGHTS}/progan_clip_vit_l14_linear.pth")
     .add_local_file(ROOT / "weights" / "cifake_clip_vit_l14_linear.pth",

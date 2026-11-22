@@ -3,8 +3,12 @@
 AIGC **still-image** detector: frozen **CLIP ViT-L/14** + **linear probe** (UniFD-inspired), with CLI, FastAPI, and Gradio.
 
 > **Not** court-grade authenticity evidence. **Not** a face-video product.  
-> **M3 near-miss:** best Hemg cross-gen AUC **≈0.78** (ProGAN probe) — gate ≥0.80 **not met**.  
-> ProGAN probe has a severe **CIFAKE tradeoff** (AUC ≈0.39). Do not pretend cross-gen ≥0.80.
+> **M5 (current default):** modern probe trained on OpenFake (Flux, SDXL, Midjourney 6, DALL·E 3, Grok-2 image, Imagen, GPT-image-1 …) + ProGAN.
+> Held-out OpenFake generators AUC **≈0.94** (JPEG-75: 0.95); Hemg cross-gen AUC **0.83** (was 0.78 with the ProGAN probe).
+> Trade-off: more false positives — ~12% of held-out real photos flagged (22% on high-res DOCCI), and drawings / digital art are often called AI.
+> Weak on Ideogram 2.0, Recraft v3, Midjourney 7 and CIFAKE-style tiny images. Training data is **CC-BY-NC-4.0** (non-commercial).
+>
+> **M3 near-miss (legacy):** ProGAN-only probe Hemg AUC **≈0.78**, CIFAKE AUC ≈0.39. Still available as `ensemble=progan`.
 
 | Item | Choice |
 |------|--------|
@@ -13,7 +17,8 @@ AIGC **still-image** detector: frozen **CLIP ViT-L/14** + **linear probe** (UniF
 | Stack | Python 3.11+, PyTorch 2.x |
 | License (our code) | MIT |
 | Default probe | ProGAN → UniFD HF → CIFAKE (auto) |
-| Optional ensemble | `--ensemble soft_router` (ProGAN+CIFAKE) |
+| Default probe | `weights/modern_clip_vit_l14_linear.pth` (M5, `model_id=modern-clip-vit-l14-linear`) |
+| Optional | `progan` (legacy probe), `--ensemble soft_router` (ProGAN+CIFAKE) |
 
 Paper: [UniFD (CVPR 2023)](https://arxiv.org/abs/2302.10174) · Code: [UniversalFakeDetect](https://github.com/WisconsinAIVision/UniversalFakeDetect) (MIT)
 
@@ -33,7 +38,8 @@ No Hugging Face / API tokens required for default `open_clip` OpenAI CLIP weight
 
 **Preference for the product demo (auto-resolved):**
 
-1. `weights/progan_clip_vit_l14_linear.pth` — best Hemg among shipped heads (~0.78 AUC)  
+1. `weights/modern_clip_vit_l14_linear.pth` — M5 default (train: `scripts/m5_extract_all.sh` + `scripts/train_modern_probe.py --with-progan --C 0.2`)  
+1b. `weights/progan_clip_vit_l14_linear.pth` — legacy ProGAN probe (~0.78 Hemg AUC)  
 2. `weights/unifd_clip_vit_l14_linear.pth` — UniFD HF mirror  
 3. `weights/cifake_clip_vit_l14_linear.pth` — CIFAKE in-domain probe  
 
@@ -83,6 +89,7 @@ python -m deepfake_detection.infer.detect path/to/image.jpg --weights weights/un
 uvicorn deepfake_detection.api.app:app --host 0.0.0.0 --port 8000
 # GET  /health   → status, model_id, weights, notes
 # POST /detect   multipart field: file  (optional form: ensemble=soft_router)
+# Modal service (modal_app/dfd_service.py): ensemble=none|progan|soft_router
 ```
 
 ### Gradio
@@ -107,10 +114,21 @@ python scripts/run_gradio.py
 | **M3c** | soft_router → CIFAKE subset | 0.8975 | 0.9647 | **0.9666** | 800 | Restores CIFAKE |
 | **M3c** | soft_router → Hemg | 0.6328 | 0.6482 | **0.6885** | 177 | **Worse** than ProGAN-only |
 | **M3c** | ProGAN-only Hemg (best) | 0.5706 | 0.8128 | **0.7798** | 177 | Still **&lt; 0.80** |
+| **M5** | modern probe → OpenFake held-out gens (clean) | 0.8565 | 0.9521 | **0.9357** | 2717 | old ProGAN probe: AUC 0.599, catches 1.6% of fakes |
+| **M5** | modern probe → OpenFake held-out (JPEG 75) | 0.8679 | 0.9603 | **0.9478** | 2717 | old: 0.611 |
+| **M5** | modern probe → Hemg | 0.7288 | 0.8510 | **0.8274** | 177 | old 0.7798; Hemg reals are 46% correct (many are drawings/art) |
+| **M5** | modern probe → ProGAN holdout | 0.9750 | 0.9984 | **0.9983** | 400 | old 0.9997 |
+| **M5** | modern probe → smoke fixtures | 0.95 | 1.0 | **1.0** | 20 | 1 real flagged |
+| **M5** | modern probe → CIFAKE | 0.5070 | 0.4641 | **0.4550** | 2000 | still near chance |
 
 Sources: `docs/m2_cifake_run.md`, `docs/m3b_progan_probe.md`, `docs/m3c_near_miss.md`, `docs/m3c_dual_probe_summary.json`.
 
-**Product default:** single ProGAN probe when available (best Hemg).  
+
+M5 data: [ComplexDataLab/OpenFake](https://huggingface.co/datasets/ComplexDataLab/OpenFake) (CC-BY-NC-4.0, v2.1). Train = `core/validation` shards 0-2 (5,754 fakes from 58 generators + 5,225 LAION/Pexels reals, JPEG/downscale/blur aug) + ProGAN train split (1,921). Held-out eval = `core/test` shards 0 and 7 (21 generators never seen in training, DOCCI/ImageNet reals).
+Full M5 tables (per generator, real-photo false positives): `docs/m5_results.md`, `docs/m5_modern_probe_summary.json`.
+
+**Product default (M5):** modern probe. Real-photo accuracy on held-out OpenFake reals: 0.88 (ImageNet 0.97, DOCCI 0.78) vs 0.99 for the old probe.  
+**Legacy:** `progan` = M3b ProGAN-only probe (old default).  
 **Optional `--ensemble soft_router`:** better CIFAKE+ProGAN balance; does **not** clear the Hemg gate.
 
 ## Failure modes
