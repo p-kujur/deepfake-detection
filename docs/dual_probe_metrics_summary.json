@@ -1,5 +1,5 @@
 {
-  "milestone": "M3c",
+  "evaluation": "dual-probe ensemble",
   "date_ist": "2026-09-21",
   "target_cross_gen_auc": 0.8,
   "target_met": false,

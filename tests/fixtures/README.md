@@ -1,6 +1,6 @@
 # Smoke fixtures
 
-## Labeled M1 pack (`smoke/`) — P1b gate
+## Labeled smoke pack (`smoke/`) — P1b gate
 
 Curated **20-image** real/fake pack used by `tests/test_smoke_infer.py`:
 

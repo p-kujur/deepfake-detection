@@ -1,7 +1,7 @@
 """NPR-lite second head: neighboring-pixel residual stem + tiny CNN.
 
 Full NPR (Tan et al., CVPR 2024 — chuangchuangtan/NPR-DeepfakeDetection) pulls in
-a custom ResNet-50 training stack and large pretrained weights. For M3 we ship a
+a custom ResNet-50 training stack and large pretrained weights. This repo ships a
 **lightweight NPR-inspired** residual CNN that:
 
 1. Forms ``x - avg_pool(x)`` (local upsampling / neighbor artifact cue).

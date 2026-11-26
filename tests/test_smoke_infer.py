@@ -1,4 +1,4 @@
-"""M1 smoke gate: labeled 20-image real/fake pack with UniFD probe weights.
+"""Smoke gate: labeled 20-image real/fake pack with UniFD probe weights.
 
 Requires:
   - weights/unifd_clip_vit_l14_linear.pth (see scripts/download_weights.py)

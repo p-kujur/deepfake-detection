@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Extract frozen CLIP ViT-L/14 (OpenAI) features for probe training / eval (M5).
+"""Extract frozen CLIP ViT-L/14 (OpenAI) features for probe training / eval.
 
 Sources:
   folder  : a pack with real/ and fake/ subfolders (ProGAN splits, Hemg, smoke)

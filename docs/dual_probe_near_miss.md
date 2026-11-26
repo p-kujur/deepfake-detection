@@ -1,10 +1,10 @@
-# M3c — Dual-probe ensemble/router + near-miss on Hemg ≥0.80
+# Dual-probe ensemble/router + near-miss on Hemg ≥0.80
 
-**Date:** 2026-09-21 (IST) · **Stretch target:** cross-gen Hemg AUC ≥ 0.80 · **Result:** **missed** (best Hemg AUC **0.7798**, same as M3b ProGAN probe).
+**Date:** 2026-09-21 (IST) · **Stretch target:** cross-gen Hemg AUC ≥ 0.80 · **Result:** **missed** (best Hemg AUC **0.7798**, same as the ProGAN-only probe).
 
 ## Framing (course-correct)
 
-Chasing Hemg with a single specialized head tanks CIFAKE (M3b tradeoff AUC ≈0.39). Prefer a **simple ensemble/router** over ProGAN + CIFAKE UniFD probes so in-domain ProGAN and CIFAKE both stay strong. Keep **CIFAKE as a separate tradeoff table**. Never select fusion on Hemg.
+Chasing Hemg with a single specialized head tanks CIFAKE (ProGAN-probe tradeoff AUC ≈0.39). Prefer a **simple ensemble/router** over ProGAN + CIFAKE UniFD probes so in-domain ProGAN and CIFAKE both stay strong. Keep **CIFAKE as a separate tradeoff table**. Never select fusion on Hemg.
 
 ## What shipped
 
@@ -13,7 +13,7 @@ Chasing Hemg with a single specialized head tanks CIFAKE (M3b tradeoff AUC ≈0.
 | Dual-probe eval | `python -m deepfake_detection.eval.dual_probe` |
 | Logit fusion helper | `fuse_logits` in `eval/cross_gen.py` |
 | NPR-lite ProGAN trainer | `train/cnn_head.py` + `configs/train_npr_lite_progan.yaml` |
-| Summary JSON | `docs/m3c_dual_probe_summary.json` |
+| Summary JSON | `docs/dual_probe_summary.json` |
 
 ## Selection rule (not Hemg)
 
@@ -46,7 +46,7 @@ ProGAN in-domain **preserved** (≥0.95).
 | logit 0.5 | 0.6328 | 0.6642 | 0.6927 |
 | hard confidence router | 0.6328 | 0.5895 | 0.6317 |
 
-**Gate AUC ≥ 0.80: not met.** Best cross-gen score remains the M3b ProGAN probe (0.7798). Mixing the CIFAKE head **hurts** Hemg ranking (CIFAKE is anti-correlated on this pack).
+**Gate AUC ≥ 0.80: not met.** Best cross-gen score remains the ProGAN-only probe (0.7798). Mixing the CIFAKE head **hurts** Hemg ranking (CIFAKE is anti-correlated on this pack).
 
 ### CIFAKE tradeoff (separate; subset n=800)
 
@@ -56,13 +56,13 @@ ProGAN in-domain **preserved** (≥0.95).
 | CIFAKE probe alone | 0.9100 | 0.9741 | **0.9728** |
 | **soft_router (selected)** | 0.8975 | 0.9647 | **0.9666** |
 
-Dual probe restores CIFAKE without destroying ProGAN holdout — the product-shaped win of M3c.
+Dual probe restores CIFAKE without destroying ProGAN holdout — the product-shaped win of the ensemble.
 
 ## NPR-lite on ProGAN (idea 1, aborted as Hemg lever)
 
 Retrained NPR-lite on the same ProGAN train split (`weights/npr_lite_progan.pth`). Holdout AUC **≈0.51** (chance) despite falling train loss — residual CNN does not learn a transferable ProGAN cue at this scale. Fusion with UniFD would not clear 0.80; not used for the gate number.
 
-JPEG/Blur probe aug (idea 2) was **already on** in M3b (`aug=true` in `train_progan_subset.yaml`). Threshold calibration skipped (Acc-only).
+JPEG/Blur probe aug (idea 2) was **already on** for the ProGAN probe (`aug=true` in `train_progan_subset.yaml`). Threshold calibration skipped (Acc-only).
 
 ## Interpretation
 
@@ -70,7 +70,7 @@ JPEG/Blur probe aug (idea 2) was **already on** in M3b (`aug=true` in `train_pro
 2. Hemg shortfall is **~0.020 AUC** under the best single head — small-n wild pack (177); ranking is already useful (AP 0.81).
 3. Stretch ≥0.80 needs more generator diversity (ForenSynths families / GenImage subset) or a stronger second cue (full NPR), not CIFAKE-head mixing.
 
-## M4 polish path (prepared, not executed)
+## Product wrap path (prepared, not executed)
 
 1. Product default: `soft_router` dual UniFD probes; expose `model_id=dual-probe-soft_router`.
 2. Cross-gen reporting: always publish **ProGAN-probe** Hemg row separately from the product ensemble.

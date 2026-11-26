@@ -36,9 +36,9 @@ def _weights_dir() -> Path:
 class Detector:
     """Frozen CLIP ViT-L/14 loaded once + linear heads applied to the same features.
 
-    ensemble=none        -> default head (modern M5 probe if present, else ProGAN)
-    ensemble=progan      -> legacy ProGAN-only probe (M3b)
-    ensemble=soft_router -> ProGAN + CIFAKE dual probe (M3c)
+    ensemble=none        -> default head (modern-generator probe if present, else ProGAN)
+    ensemble=progan      -> legacy ProGAN-only probe
+    ensemble=soft_router -> ProGAN + CIFAKE dual probe
     """
 
     def __init__(self, weights_dir: str | Path | None = None, device: str = "cpu") -> None:

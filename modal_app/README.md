@@ -58,5 +58,5 @@ Modal dependency).
 
 ## Caveats
 
-Experimental score, not court-grade. M3 near-miss: best Hemg cross-generator AUC ≈ 0.78.
+Experimental score, not court-grade. The original ProGAN-only probe scored Hemg cross-generator AUC ≈ 0.78 (short of the 0.80 target).
 The ProGAN probe often misses modern generators (Midjourney / SDXL / Flux).

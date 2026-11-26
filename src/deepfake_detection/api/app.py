@@ -25,7 +25,7 @@ app = FastAPI(
     version=__version__,
     description=(
         "AIGC still-image detector (CLIP ViT-L/14 + linear probe). "
-        "Scores are experimental — not court-grade. M3 Hemg cross-gen AUC ≈0.78 near-miss."
+        "Scores are experimental — not court-grade. Original ProGAN probe Hemg cross-gen AUC ≈0.78."
     ),
 )
 

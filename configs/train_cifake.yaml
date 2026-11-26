@@ -1,4 +1,4 @@
-# M2 full official CIFAKE split (100k train / 20k test).
+# Full official CIFAKE split (100k train / 20k test).
 # Feature extraction of CLIP ViT-L/14 on CPU can take many hours — use GPU if available
 # or start from the subset config first.
 seed: 42

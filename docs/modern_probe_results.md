@@ -1,4 +1,4 @@
-# M5 modern probe results (final)
+# Modern probe results (final)
 
 train n=12900 (real=6174, fake=6726), with_progan=True, C=0.2
 

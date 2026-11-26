@@ -1,4 +1,4 @@
-"""Inference CLI and helpers (M4 product wrap)."""
+"""Inference CLI and helpers."""
 
 from deepfake_detection.infer.pipeline import run_detect
 from deepfake_detection.infer.resolve import (

@@ -1,4 +1,4 @@
-# M3b — UniFD-style linear probe on ProGAN / ForenSynths-style data (domain close).
+# UniFD-style linear probe on ProGAN / ForenSynths-style data (domain close).
 # Train source: ProGAN-Eval split remainder + frp94/progan_val train.
 # Holdout test: ProGAN-Eval stratified holdout (see configs/progan_splits_summary.json).
 # Cross-gen eval: Hemg wild (never in train). CIFAKE re-eval for in-domain tradeoff.

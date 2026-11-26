@@ -77,7 +77,7 @@ def build_demo():
             ),
         ],
         outputs=gr.JSON(label="Detection {p_fake, label, model_id, notes, version}"),
-        title="Deepfake / AIGC Detection (M4 demo)",
+        title="Deepfake / AIGC Detection",
         description=(
             "Default single probe: ProGAN → UniFD → CIFAKE. "
             + product_notes()

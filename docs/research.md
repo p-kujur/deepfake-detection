@@ -136,7 +136,7 @@ Next: DIRE (https://arxiv.org/abs/2303.09295) for diffusion focus; DeepfakeBench
 
 ## Suggested 30-day build plan
 
-| Week | Milestone |
+| Week | Focus |
 |------|-----------|
 | 1 | Choose modality (AIGC image vs face video). Clone UniFD **or** DeepfakeBench. Run pretrained inference on ~20 known real/fake samples. |
 | 2 | Train tiny baseline on CIFAKE or FF++ c23 frames. Log Acc/AP; add JPEG augmentation. |

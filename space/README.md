@@ -35,7 +35,7 @@ console.log(r.data[0]); // {p_fake, label, model_id, notes, version}
 ## Caveats
 
 - Experimental score, **not court-grade** authenticity evidence.
-- M3 near-miss: best Hemg cross-generator AUC ≈ **0.78** (target was ≥ 0.80).
+- The original ProGAN-only probe scored Hemg cross-generator AUC ≈ **0.78** (target was ≥ 0.80).
 - The ProGAN probe often misses modern generators (Midjourney / SDXL / Flux style
   images can score low / "real"). In-domain and cross-generator results are different tables.
 - Face video is out of scope for v1. Runs on free CPU: the first request after

@@ -1,4 +1,4 @@
-# M3b — Close domain gap: ProGAN/ForenSynths CLIP linear probe
+# Close domain gap: ProGAN/ForenSynths CLIP linear probe
 
 **Date:** 2026-09-21 (IST) · **Stretch target:** cross-gen AUC ≥ 0.80 · **Result:** **missed** (Hemg AUC **0.7798**).
 
@@ -49,7 +49,7 @@ Modest HF downloads only (~256 MB materialised):
 
 ### Cross-generator (Hemg wild Midjourney-style — unseen)
 
-| Metric | CIFAKE probe (M3) | **ProGAN probe (M3b)** | Δ |
+| Metric | CIFAKE probe | **ProGAN probe** | Δ |
 |--------|-------------------|------------------------|---|
 | Acc | 0.481 | 0.571 | +0.09 |
 | AP | 0.462 | **0.8128** | +0.35 |
@@ -58,12 +58,12 @@ Modest HF downloads only (~256 MB materialised):
 
 **Target AUC ≥ 0.80: not met** (short by ~0.020). Ranking quality improved sharply; Acc@0.5 remains weak (threshold not calibrated for Hemg).
 
-### CIFAKE test tradeoff (subset n=2000, same seed as M2)
+### CIFAKE test tradeoff (subset n=2000, same seed as the CIFAKE probe run)
 
 | Probe train domain | Acc | AP | AUC |
 |--------------------|-----|----|-----|
-| CIFAKE (M2) | 0.9125 | 0.9736 | 0.9739 |
-| **ProGAN (M3b)** | **0.4215** | **0.4188** | **0.3915** |
+| CIFAKE probe | 0.9125 | 0.9736 | 0.9739 |
+| **ProGAN probe** | **0.4215** | **0.4188** | **0.3915** |
 
 Symmetric domain swap: ProGAN probe collapses on CIFAKE SD 32×32 just as CIFAKE probe collapsed on ProGAN/Hemg.
 

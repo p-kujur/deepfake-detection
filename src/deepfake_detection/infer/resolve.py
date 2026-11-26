@@ -1,8 +1,8 @@
-"""Default probe weight resolution and shared product notes (M4).
+"""Default probe weight resolution and shared product notes.
 
 Preference order for single-probe demo:
-  1. weights/modern_clip_vit_l14_linear.pth  (M5: OpenFake modern generators + ProGAN)
-  2. weights/progan_clip_vit_l14_linear.pth  (M3b ProGAN-only probe, legacy default)
+  1. weights/modern_clip_vit_l14_linear.pth  (OpenFake modern generators + ProGAN)
+  2. weights/progan_clip_vit_l14_linear.pth  (ProGAN-only probe, legacy default)
   3. weights/unifd_clip_vit_l14_linear.pth   (HF UniFD mirror)
   4. weights/cifake_clip_vit_l14_linear.pth  (CIFAKE in-domain)
 
@@ -17,7 +17,7 @@ from pathlib import Path
 
 from deepfake_detection import __version__
 
-# Preference: modern (M5) → ProGAN → UniFD HF → CIFAKE
+# Preference: modern-generator probe → ProGAN → UniFD HF → CIFAKE
 WEIGHT_CANDIDATES: list[tuple[str, Path]] = [
     ("modern-clip-vit-l14-linear", Path("weights/modern_clip_vit_l14_linear.pth")),
     ("progan-clip-vit-l14-linear", Path("weights/progan_clip_vit_l14_linear.pth")),
@@ -31,10 +31,10 @@ CIFAKE_WEIGHTS = WEIGHT_CANDIDATES[3][1]
 
 ENSEMBLE_MODEL_ID = "dual-probe-soft_router"
 
-# Honest product caveats — M3 near-miss must stay visible.
+# Honest product caveats — the ProGAN-probe Hemg shortfall must stay visible.
 PRODUCT_NOTES = (
     "Experimental AIGC still-image score — not court-grade authenticity evidence. "
-    "Default (M5) modern probe: CLIP ViT-L/14 + linear head trained on OpenFake modern "
+    "Default modern probe: CLIP ViT-L/14 + linear head trained on OpenFake modern "
     "generators + ProGAN (training data CC-BY-NC-4.0). Held-out OpenFake generators AUC ≈0.94-0.95, "
     "Hemg cross-gen AUC ≈0.83 (legacy ProGAN-only probe ≈0.78). "
     "More false positives than the old probe: ~12% of real photos flagged (up to ~22% on "

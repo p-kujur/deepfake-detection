@@ -1,4 +1,4 @@
-# Default inference / eval config (M4 product wrap)
+# Default inference / eval config
 model:
   # Resolved at runtime from available files; model_id follows the loaded probe.
   id: auto
@@ -31,6 +31,6 @@ gradio:
 
 notes: >
   Experimental AIGC still-image score — not court-grade authenticity evidence.
-  M3 near-miss: best Hemg cross-gen AUC ≈0.78 with the ProGAN-trained probe;
+  The original ProGAN-only probe scored Hemg cross-gen AUC ≈0.78 (short of 0.80);
   CIFAKE domain tradeoff when using that probe (AUC ≈0.39). Cross-generator
   limits remain; do not treat scores as ≥0.80 cross-gen.

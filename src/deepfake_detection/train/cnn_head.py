@@ -1,4 +1,4 @@
-"""Train NPR-lite CNN second head (CIFAKE M3 or ProGAN-folder M3c)."""
+"""Train NPR-lite CNN second head (CIFAKE or ProGAN-folder data)."""
 
 from __future__ import annotations
 

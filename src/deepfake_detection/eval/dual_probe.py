@@ -1,4 +1,4 @@
-"""M3c dual-probe ensemble/router: ProGAN UniFD head + CIFAKE UniFD head.
+"""Dual-probe ensemble/router: ProGAN UniFD head + CIFAKE UniFD head.
 
 Shared frozen CLIP backbone; two linear probes. Fusion weight / router chosen
 on ProGAN **val** only (never on Hemg). CIFAKE reported as a separate tradeoff
@@ -212,7 +212,7 @@ def _write(
 
 def main(argv: list[str] | None = None) -> int:
     logging.basicConfig(level=logging.INFO, format="%(levelname)s %(message)s")
-    p = argparse.ArgumentParser(description="M3c dual-probe ProGAN+CIFAKE ensemble/router")
+    p = argparse.ArgumentParser(description="Dual-probe ProGAN+CIFAKE ensemble/router")
     p.add_argument("--progan-weights", default="weights/progan_clip_vit_l14_linear.pth")
     p.add_argument("--cifake-weights", default="weights/cifake_clip_vit_l14_linear.pth")
     p.add_argument("--batch-size", type=int, default=8)
@@ -306,7 +306,7 @@ def main(argv: list[str] | None = None) -> int:
     )
 
     summary: dict[str, Any] = {
-        "milestone": "M3c",
+        "evaluation": "dual-probe ensemble",
         "selection_pack": "progan_val",
         "selected": best,
         "val_top5": selection["all"][:5],
@@ -345,10 +345,10 @@ def main(argv: list[str] | None = None) -> int:
             model_id=f"dual-probe-{best['mode']}",
             metrics=sel,
             notes=(
-                f"M3c dual UniFD probes (ProGAN+CIFAKE); selected on progan_val: "
+                f"Dual UniFD probes (ProGAN+CIFAKE); selected on progan_val: "
                 f"mode={best['mode']} w_progan={best['weight_a']}"
             ),
-            tag=f"m3c-{pack}-{best['mode']}",
+            tag=f"dual-{pack}-{best['mode']}",
             aug={
                 "fusion_mode": best["mode"],
                 "fusion_weight_progan": best["weight_a"],
@@ -392,8 +392,8 @@ def main(argv: list[str] | None = None) -> int:
         dataset="cifake_subset_tradeoff",
         model_id=f"dual-probe-{best['mode']}",
         metrics=sel,
-        notes="M3c CIFAKE tradeoff table (separate from in-domain / cross-gen)",
-        tag=f"m3c-cifake-{best['mode']}",
+        notes="CIFAKE tradeoff table (separate from in-domain / cross-gen)",
+        tag=f"dual-cifake-{best['mode']}",
         aug={"fusion_mode": best["mode"], "fusion_weight_progan": best["weight_a"]},
     )
     print(
@@ -413,14 +413,14 @@ def main(argv: list[str] | None = None) -> int:
     }
 
     out = Path("artifacts/runs") / (
-        time.strftime("%Y%m%d-%H%M%S") + "-" + uuid.uuid4().hex[:8] + "-m3c-dual-summary"
+        time.strftime("%Y%m%d-%H%M%S") + "-" + uuid.uuid4().hex[:8] + "-dual-probe-summary"
     )
     out.mkdir(parents=True, exist_ok=True)
     (out / "summary.json").write_text(json.dumps(summary, indent=2, default=str) + "\n")
-    Path("docs/m3c_dual_probe_summary.json").write_text(
+    Path("docs/dual_probe_summary.json").write_text(
         json.dumps(
             {
-                "milestone": "M3c",
+                "evaluation": "dual-probe ensemble",
                 "selected": best,
                 "gate": summary["gate"],
                 "tables": summary["tables"],

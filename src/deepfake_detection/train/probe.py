@@ -1,8 +1,8 @@
 """Train UniFD-style linear probe on frozen CLIP features.
 
 Supports:
-  - CIFAKE (M2): ``data.name: cifake`` + HF cache
-  - Folder packs (M3b ProGAN): ``data.name: progan_folder`` with train/test roots
+  - CIFAKE: ``data.name: cifake`` + HF cache
+  - Folder packs (ProGAN): ``data.name: progan_folder`` with train/test roots
 
 Pipeline:
   1. Load train/test images (CIFAKE or real/fake folders).

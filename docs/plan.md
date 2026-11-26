@@ -71,8 +71,8 @@ Primary reporting: **AP and AUC** on held-out sets; Accuracy only as a secondary
 | **Latency p95** | ≤ **2.0 s** / image CPU; ≤ **300 ms** / image if CUDA | Single 224–256px path, batch=1, warm model | UniFD CLIP-L is heavy on CPU — document hardware |
 | **Robustness (JPEG)** | AUC drop ≤ **0.05** at JPEG q=70; ≤ **0.10** at q=50 | Re-encode test set | Match social-media degradation |
 | **Robustness (resize)** | AUC drop ≤ **0.05** for short side 256→128 then back | Resize then model native size | Catches brittle frequency cues |
-| **Smoke correctness** | ≥ **18/20** correct on curated real/fake pack | Fixed fixture set in repo | Gate for M1 |
-| **API contract** | 100% schema-valid responses in tests | `{p_fake, label, model_id, notes, version}` | M4 acceptance |
+| **Smoke correctness** | ≥ **18/20** correct on curated real/fake pack | Fixed fixture set in repo | Smoke-pack gate |
+| **API contract** | 100% schema-valid responses in tests | `{p_fake, label, model_id, notes, version}` | API acceptance |
 
 ### Metric logging contract (for coder)
 Every `artifacts/runs/<id>/metrics.json` should include at least:
@@ -92,7 +92,7 @@ Every `artifacts/runs/<id>/metrics.json` should include at least:
 | Phase | Dataset | Role | Scale (approx.) | Access / link | Disk / notes |
 |-------|---------|------|-----------------|---------------|--------------|
 | **P1** | **CIFAKE** | Tiny train/val/test smoke; first Acc/AP/AUC | 120k (32×32) | https://github.com/jordan-bird/CIFAKE-Real-and-AI-Generated-Synthetic-Images · paper https://arxiv.org/abs/2303.14126 | Small; good for CI; **not** enough for SOTA claims |
-| **P1b** | Curated **20-image smoke pack** | M1 gate (known real/fake) | 20 | Hand-picked; store under `tests/fixtures/` | Mandatory before claiming UniFD wired |
+| **P1b** | Curated **20-image smoke pack** | Smoke-pack gate (known real/fake) | 20 | Hand-picked; store under `tests/fixtures/` | Mandatory before claiming UniFD wired |
 | **P2a** | **CNNDetection / ForenSynths** | Classic GAN train (ProGAN) + multi-GAN tests | 100k+ | https://github.com/peterwang512/CNNDetection | Aligns with UniFD / NPR training lore |
 | **P2b** | **GenImage** subset | Cross-generator eval (SD, Midjourney, ADM, …) | Full ~2.7M; use **subset** first | https://github.com/GenImage-Dataset/GenImage · https://arxiv.org/abs/2306.08571 | Disk heavy — download 1–2 generators first |
 | **P2c** | **DiffusionForensics** (DIRE) | Optional diffusion-focused eval | Large | Via https://github.com/ZhendongWang6/DIRE | Only if Branch A pushes diffusion-hard cases |
@@ -153,44 +153,44 @@ deepfake-detection/
 
 ---
 
-## 5. Milestones (30-day sketch → engineering tasks)
+## 5. Work plan (30-day sketch → engineering tasks)
 
-### M0 — Lock plan (day 0–1)
+### Lock plan (day 0–1)
 - [x] Fill §1–3 (project bot)
 - [x] Ezra confirms D1–D5 (skipped widgets → recommended defaults locked 2026-09-21)
 - [ ] Create Origin / Git repo via cloud agent
 - [ ] Logger bot hooks once available
 
-### M1 — Scaffold + pretrained smoke (week 1)
+### Scaffold + pretrained smoke (week 1)
 - [x] Repo skeleton + deps (PyTorch, transformers/open_clip, FastAPI, Gradio)
 - [x] Integrate UniFD pretrained inference
 - [x] Smoke: ≥20 known real/fake images → JSON results (P1b pack; gate ≥18/20)
 - [x] Metrics logger (Acc, AP, AUC stubs)
 
-### M2 — Train tiny baseline (week 2)
+### Train tiny baseline (week 2)
 - [x] CIFAKE dataloader + Blur/JPEG aug
 - [x] Train linear probe or ResNet baseline
 - [x] Log Acc/AP; save checkpoint + config hash
 - [x] Unit tests for preprocess + schema
 
-### M3 — Cross-test + second head (week 3)
+### Cross-test + second head (week 3)
 - [x] Eval on held-out cross-gen packs (ProGAN-Eval + Hemg wild AI-art; GenImage full deferred — too heavy)
 - [x] NPR-lite second head + mean-prob fusion (full NPR documented, not vendored)
 - [x] Robustness suite (JPEG q=70, resize-short=128)
-- [x] Document failure modes / NPR path (`docs/m3_crossgen.md`, `docs/npr_integration.md`)
+- [x] Document failure modes / NPR path (`docs/cross_generator_eval.md`, `docs/npr_integration.md`)
 
-### M3b — ProGAN domain close (post-M3)
+### ProGAN domain close (after cross-generator eval)
 - [x] Train frozen CLIP probe on ProGAN-Eval + frp94 train (documented splits)
 - [x] In-domain ProGAN holdout + Hemg cross-gen + CIFAKE tradeoff
-- [x] Docs: `docs/m3b_progan_probe.md` (Hemg AUC 0.78; ≥0.80 **missed**)
+- [x] Docs: `docs/progan_probe.md` (Hemg AUC 0.78; ≥0.80 **missed**)
 
-### M3c — Dual-probe ensemble/router (near-miss polish)
+### Dual-probe ensemble/router (near-miss polish)
 - [x] ProGAN + CIFAKE UniFD probe ensemble (mean / logit / confidence router)
 - [x] Select on ProGAN val + CIFAKE subset (never Hemg); soft_router product default
 - [x] NPR-lite retrained on ProGAN split (holdout ~chance — not used for gate)
-- [x] Docs: `docs/m3c_near_miss.md` — Hemg best still **0.7798**; gate **missed**; M4 path noted
+- [x] Docs: `docs/dual_probe_near_miss.md` — Hemg best still **0.7798**; gate **missed**; product-wrap path noted
 
-### M4 — Product wrap (week 4)
+### Product wrap (week 4)
 - [ ] `detect` CLI + FastAPI `POST /detect`
 - [ ] Gradio demo
 - [ ] Response schema: `{p_fake, label, model_id, notes, version}`
@@ -221,7 +221,7 @@ deepfake-detection/
 **Handoffs**
 - Project bot → coder: locked framing, dataset URLs, metric targets
 - Coder → project bot: smoke results, metric tables, blockers
-- Both → logger: milestones + decisions
+- Both → logger: progress + decisions
 
 ---
 
@@ -235,4 +235,4 @@ deepfake-detection/
 
 ---
 
-*v0.2.1: §1–3 filled 18 Sep 2026; D1–D5 LOCKED to recommended defaults 21 Sep 2026 (widgets skipped). Shortlist: UniFD → NPR → face branch (DeepfakeBench). M1 scaffold on main.*
+*v0.2.1: §1–3 filled 18 Sep 2026; D1–D5 LOCKED to recommended defaults 21 Sep 2026 (widgets skipped). Shortlist: UniFD → NPR → face branch (DeepfakeBench). Scaffold landed on main.*

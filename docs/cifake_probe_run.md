@@ -1,4 +1,4 @@
-# M2 CIFAKE linear-probe run notes
+# CIFAKE linear-probe run notes
 
 ## First metrics (CPU subset)
 

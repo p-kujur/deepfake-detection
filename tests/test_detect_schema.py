@@ -1,4 +1,4 @@
-"""M4: shared detect schema, weight preference, CLI/API JSON shape."""
+"""Shared detect schema, weight preference, CLI/API JSON shape."""
 
 from __future__ import annotations
 
@@ -74,7 +74,7 @@ def test_resolve_preference_order(tmp_path, monkeypatch):
     path, mid, found = resolve_default_probe_weights(None)
     assert mid == "progan-clip-vit-l14-linear"
 
-    # Add M5 modern probe → top preference
+    # Add modern probe → top preference
     (weights / "modern_clip_vit_l14_linear.pth").write_bytes(b"x" * 100)
     path, mid, found = resolve_default_probe_weights(None)
     assert mid == "modern-clip-vit-l14-linear"

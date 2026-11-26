@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-"""M5: train a modern-generator linear probe on cached CLIP features and compare
+"""Train a modern-generator linear probe on cached CLIP features and compare
 against the shipped ProGAN probe (+ soft_router) on every eval pack.
 
 Inputs are caches written by scripts/extract_clip_features.py under
-artifacts/feature_cache/m5/. Output: weights/<name>.pth (Linear 768->1, raw CLIP
-features, same format as the ProGAN probe) + docs/m5_modern_probe_summary.json.
+artifacts/feature_cache/modern/. Output: weights/<name>.pth (Linear 768->1, raw CLIP
+features, same format as the ProGAN probe) + docs/modern_probe_summary.json.
 """
 
 from __future__ import annotations
@@ -20,7 +20,7 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score, average_precision_score, roc_auc_score
 
 ROOT = Path(__file__).resolve().parents[1]
-FC = ROOT / "artifacts/feature_cache/m5"
+FC = ROOT / "artifacts/feature_cache/modern"
 
 
 def available(name):
@@ -94,8 +94,8 @@ def main():
     ap.add_argument("--with-progan", action="store_true", help="add ProGAN train features")
     ap.add_argument("--C", type=float, default=None, help="skip group-CV, use this C")
     ap.add_argument("--out", default="weights/modern_clip_vit_l14_linear.pth")
-    ap.add_argument("--md", default="artifacts/m5_results.md")
-    ap.add_argument("--summary", default="docs/m5_modern_probe_summary.json")
+    ap.add_argument("--md", default="docs/modern_probe_results.md")
+    ap.add_argument("--summary", default="docs/modern_probe_summary.json")
     args = ap.parse_args()
 
     X, y, meta = load("of_train_aug.pt")
@@ -170,7 +170,7 @@ def main():
                 per_gen[name][f"{'fake' if lab else 'real'}:{mod}"] = {
                     hn: float(((sig(Xe[idx] @ hw + hb) >= 0.5) == lab).mean()) for hn, (hw, hb) in heads.items()
                 } | {"n": int(len(idx))}
-    # CIFAKE tradeoff (existing M2 cache, test split)
+    # CIFAKE tradeoff (existing CIFAKE feature cache, test split)
     cf = ROOT / "artifacts/feature_cache/cifake_tr4000_te2000_seed42_sz224.pt"
     if cf.exists():
         d = torch.load(cf, weights_only=False)
@@ -193,7 +193,7 @@ def main():
         for k, v in g.items():
             print(f"  {k:40s} n={v['n']:4d} old={v['progan (old default)']:.3f} new={v['new']:.3f}")
 
-    md = [f"# M5 modern probe results ({'interim' if not (FC / 'of_test_social.pt').exists() else 'final'})", "",
+    md = [f"# Modern probe results ({'interim' if not (FC / 'of_test_social.pt').exists() else 'final'})", "",
           f"train n={len(y)} (real={int((y==0).sum())}, fake={int((y==1).sum())}), with_progan={args.with_progan}, C={C}", "",
           "| eval set | head | n | AUC | AP | acc@0.5 | real acc (1-FPR) | fake acc (TPR) |", "|---|---|---|---|---|---|---|---|"]
     for name, r in res.items():

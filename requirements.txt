@@ -1,4 +1,4 @@
-# Pin-friendly install for M1 scaffold (Python 3.11+)
+# Pin-friendly install for the project scaffold (Python 3.11+)
 torch>=2.0
 torchvision>=0.15
 numpy>=1.24

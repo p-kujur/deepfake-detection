@@ -1,12 +1,12 @@
-# NPR integration path (M3)
+# NPR integration path
 
 ## What we shipped (NPR-lite)
 
 Full **NPR** (Tan et al., CVPR 2024 — [chuangchuangtan/NPR-DeepfakeDetection](https://github.com/chuangchuangtan/NPR-DeepfakeDetection))
 depends on a custom ResNet-50 training stack and large pretrained checkpoints. Pulling that
-into this repo would dominate deps and disk for a modest milestone.
+into this repo would dominate deps and disk at this stage.
 
-Instead M3 ships **NPR-lite** (`deepfake_detection.models.npr_lite`):
+Instead this repo ships **NPR-lite** (`deepfake_detection.models.npr_lite`):
 
 1. Neighboring-pixel residual stem: `x - avg_pool3x3(x)` (upsampling / neighbor cue).
 2. Tiny conv tower (~100k params) trained on the same CIFAKE subset as the UniFD probe.

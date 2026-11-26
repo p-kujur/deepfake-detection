@@ -1,4 +1,4 @@
-"""M3 cross-generator eval, score fusion, and JPEG/resize robustness.
+"""Cross-generator eval, score fusion, and JPEG/resize robustness.
 
 Writes ``artifacts/runs/<id>/metrics.json`` per plan contract.
 """
@@ -178,7 +178,7 @@ def run_pack(
         metrics=m_u,
         threshold=threshold,
         aug=aug,
-        notes=f"M3 cross-gen UniFD probe on {pack_name}; root={pack_root}",
+        notes=f"Cross-gen UniFD probe on {pack_name}; root={pack_root}",
         config_path=config_path,
         tag=f"cg-{pack_name}-unifd{tag_suffix}",
     )
@@ -206,7 +206,7 @@ def run_pack(
             metrics=m_c,
             threshold=threshold,
             aug=aug,
-            notes=f"M3 cross-gen NPR-lite on {pack_name}",
+            notes=f"Cross-gen NPR-lite on {pack_name}",
             config_path=config_path,
             tag=f"cg-{pack_name}-npr{tag_suffix}",
         )
@@ -234,7 +234,7 @@ def run_pack(
                 "fusion_mode": mode_label,
             },
             notes=(
-                f"M3c {mode_label} fusion UniFD×{fusion_weight} + "
+                f"{mode_label} fusion UniFD×{fusion_weight} + "
                 f"NPR-lite×{1 - fusion_weight}"
             ),
             config_path=config_path,
@@ -253,7 +253,7 @@ def run_pack(
 
 def main(argv: list[str] | None = None) -> int:
     logging.basicConfig(level=logging.INFO, format="%(levelname)s %(message)s")
-    parser = argparse.ArgumentParser(description="M3 cross-gen + fusion + robustness eval")
+    parser = argparse.ArgumentParser(description="Cross-gen + fusion + robustness eval")
     parser.add_argument("--config", default="configs/eval_crossgen.yaml")
     parser.add_argument("--probe-weights", default="weights/cifake_clip_vit_l14_linear.pth")
     parser.add_argument("--npr-weights", default="weights/npr_lite_cifake.pth")
@@ -364,11 +364,11 @@ def main(argv: list[str] | None = None) -> int:
             )
 
     out = Path("artifacts/runs") / (
-        time.strftime("%Y%m%d-%H%M%S") + "-" + uuid.uuid4().hex[:8] + "-m3-summary"
+        time.strftime("%Y%m%d-%H%M%S") + "-" + uuid.uuid4().hex[:8] + "-crossgen-summary"
     )
     out.mkdir(parents=True, exist_ok=True)
     (out / "summary.json").write_text(json.dumps(summary, indent=2, default=str) + "\n")
-    print(f"Wrote M3 summary: {out / 'summary.json'}")
+    print(f"Wrote cross-generator summary: {out / 'summary.json'}")
     return 0
 
 

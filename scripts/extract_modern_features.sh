@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
-# M5 feature extraction chain (idempotent + resumable: parts/ checkpoints, skips finished caches).
+# Modern-probe feature extraction chain (idempotent + resumable: parts/ checkpoints, skips finished caches).
 set -x
 cd "$(dirname "$0")/.."
 export PYTHONHASHSEED=0
-P=${PYTHON:-python}; FC=artifacts/feature_cache/m5; R=datasets/openfake_raw
+P=${PYTHON:-python}; FC=artifacts/feature_cache/modern; R=datasets/openfake_raw
 run() { local final=$1; shift; [ -f "$final" ] && { echo "skip $final"; return; }; $P scripts/extract_clip_features.py "$@"; }
 run $FC/hemg_social.pt --source folder --inputs datasets/crossgen/hemg_wild --views clean social --out $FC/hemg.pt
 run $FC/progan_test_social.pt --source folder --inputs datasets/progan_forensynths/splits/test --views clean social --out $FC/progan_test.pt

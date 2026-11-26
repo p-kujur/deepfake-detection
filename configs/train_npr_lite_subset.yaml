@@ -20,4 +20,4 @@ train:
   weights_out: weights/npr_lite_cifake.pth
 metrics:
   output_dir: artifacts/runs
-notes: M3 NPR-lite second head on same CIFAKE subset as M2 probe.
+notes: NPR-lite second head on the same CIFAKE subset as the CIFAKE linear probe.

@@ -1,4 +1,4 @@
-# M2 quick-run config (CPU-friendly). Prefer full split via train_cifake.yaml when GPU/time allows.
+# CIFAKE quick-run config (CPU-friendly). Prefer full split via train_cifake.yaml when GPU/time allows.
 seed: 42
 
 model:
@@ -14,7 +14,7 @@ data:
   name: cifake
   hf_id: dragonintelligence/CIFAKE-image-dataset
   cache_dir: datasets/cifake
-  # Subset of official 100k/20k split — first metrics.json milestone
+  # Subset of official 100k/20k split — first logged metrics.json
   max_train: 4000
   max_test: 2000
 
@@ -38,5 +38,5 @@ metrics:
   output_dir: artifacts/runs
 
 notes: >
-  Subset M2 run. Targets Acc≥0.90 / AP·AUC≥0.95 are aspirational for full CIFAKE;
+  CIFAKE subset run. Targets Acc≥0.90 / AP·AUC≥0.95 are aspirational for full CIFAKE;
   report subset numbers honestly. Full train: configs/train_cifake.yaml

@@ -1,4 +1,4 @@
-"""Shared single-image inference for CLI / FastAPI / Gradio (M4)."""
+"""Shared single-image inference for CLI / FastAPI / Gradio."""
 
 from __future__ import annotations
 

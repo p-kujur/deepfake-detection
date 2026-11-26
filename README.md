@@ -1,14 +1,14 @@
-# Deepfake Detection (M1–M4)
+# Deepfake Detection
 
 AIGC **still-image** detector: frozen **CLIP ViT-L/14** + **linear probe** (UniFD-inspired), with CLI, FastAPI, and Gradio.
 
 > **Not** court-grade authenticity evidence. **Not** a face-video product.  
-> **M5 (current default):** modern probe trained on OpenFake (Flux, SDXL, Midjourney 6, DALL·E 3, Grok-2 image, Imagen, GPT-image-1 …) + ProGAN.
+> **Current default:** modern probe trained on OpenFake (Flux, SDXL, Midjourney 6, DALL·E 3, Grok-2 image, Imagen, GPT-image-1 …) + ProGAN.
 > Held-out OpenFake generators AUC **≈0.94** (JPEG-75: 0.95); Hemg cross-gen AUC **0.83** (was 0.78 with the ProGAN probe).
 > Trade-off: more false positives — ~12% of held-out real photos flagged (22% on high-res DOCCI), and drawings / digital art are often called AI.
 > Weak on Ideogram 2.0, Recraft v3, Midjourney 7 and CIFAKE-style tiny images. Training data is **CC-BY-NC-4.0** (non-commercial).
 >
-> **M3 near-miss (legacy):** ProGAN-only probe Hemg AUC **≈0.78**, CIFAKE AUC ≈0.39. Still available as `ensemble=progan`.
+> **Legacy ProGAN-only probe:** Hemg AUC **≈0.78**, CIFAKE AUC ≈0.39. Still available as `ensemble=progan`.
 
 | Item | Choice |
 |------|--------|
@@ -17,7 +17,7 @@ AIGC **still-image** detector: frozen **CLIP ViT-L/14** + **linear probe** (UniF
 | Stack | Python 3.11+, PyTorch 2.x |
 | License (our code) | MIT |
 | Default probe | ProGAN → UniFD HF → CIFAKE (auto) |
-| Default probe | `weights/modern_clip_vit_l14_linear.pth` (M5, `model_id=modern-clip-vit-l14-linear`) |
+| Default probe | `weights/modern_clip_vit_l14_linear.pth` (`model_id=modern-clip-vit-l14-linear`) |
 | Optional | `progan` (legacy probe), `--ensemble soft_router` (ProGAN+CIFAKE) |
 
 Paper: [UniFD (CVPR 2023)](https://arxiv.org/abs/2302.10174) · Code: [UniversalFakeDetect](https://github.com/WisconsinAIVision/UniversalFakeDetect) (MIT)
@@ -38,7 +38,7 @@ No Hugging Face / API tokens required for default `open_clip` OpenAI CLIP weight
 
 **Preference for the product demo (auto-resolved):**
 
-1. `weights/modern_clip_vit_l14_linear.pth` — M5 default (train: `scripts/m5_extract_all.sh` + `scripts/train_modern_probe.py --with-progan --C 0.2`)  
+1. `weights/modern_clip_vit_l14_linear.pth` — default modern probe (train: `scripts/extract_modern_features.sh` + `scripts/train_modern_probe.py --with-progan --C 0.2`)  
 1b. `weights/progan_clip_vit_l14_linear.pth` — legacy ProGAN probe (~0.78 Hemg AUC)  
 2. `weights/unifd_clip_vit_l14_linear.pth` — UniFD HF mirror  
 3. `weights/cifake_clip_vit_l14_linear.pth` — CIFAKE in-domain probe  
@@ -65,7 +65,7 @@ All three surfaces return the same object:
   "p_fake": 0.87,
   "label": "fake",
   "model_id": "progan-clip-vit-l14-linear",
-  "notes": "...caveats incl. M3 near-miss...",
+  "notes": "...caveats incl. the ProGAN-probe Hemg shortfall...",
   "version": "0.1.0"
 }
 ```
@@ -102,33 +102,33 @@ python scripts/run_gradio.py
 
 ## Metrics summary (honest)
 
-| Milestone | Setting | Acc | AP | AUC | n | Notes |
-|-----------|---------|-----|----|-----|---|-------|
-| **M1** smoke | UniFD HF, 20-img pack | ≥18/20 gate | — | — | 20 | Wiring / correctness gate |
-| **M2** | CIFAKE subset probe | 0.9125 | 0.9736 | **0.9739** | 2000 | In-domain subset; plan targets met |
-| **M3** | CIFAKE probe → Hemg wild | 0.481 | 0.462 | **0.456** | 160 | Cross-gen failure (domain gap) |
-| **M3b** | ProGAN probe → holdout | 0.9875 | 0.9997 | **0.9997** | 400 | In-domain strong |
-| **M3b** | ProGAN probe → Hemg | 0.5706 | 0.8128 | **0.7798** | 177 | **Near-miss** vs ≥0.80 |
-| **M3b** | ProGAN probe → CIFAKE | 0.4215 | 0.4188 | **0.3915** | 2000 | Severe tradeoff |
-| **M3c** | soft_router → ProGAN holdout | 0.9700 | 0.9971 | **0.9972** | 400 | Product in-domain OK |
-| **M3c** | soft_router → CIFAKE subset | 0.8975 | 0.9647 | **0.9666** | 800 | Restores CIFAKE |
-| **M3c** | soft_router → Hemg | 0.6328 | 0.6482 | **0.6885** | 177 | **Worse** than ProGAN-only |
-| **M3c** | ProGAN-only Hemg (best) | 0.5706 | 0.8128 | **0.7798** | 177 | Still **&lt; 0.80** |
-| **M5** | modern probe → OpenFake held-out gens (clean) | 0.8565 | 0.9521 | **0.9357** | 2717 | old ProGAN probe: AUC 0.599, catches 1.6% of fakes |
-| **M5** | modern probe → OpenFake held-out (JPEG 75) | 0.8679 | 0.9603 | **0.9478** | 2717 | old: 0.611 |
-| **M5** | modern probe → Hemg | 0.7288 | 0.8510 | **0.8274** | 177 | old 0.7798; Hemg reals are 46% correct (many are drawings/art) |
-| **M5** | modern probe → ProGAN holdout | 0.9750 | 0.9984 | **0.9983** | 400 | old 0.9997 |
-| **M5** | modern probe → smoke fixtures | 0.95 | 1.0 | **1.0** | 20 | 1 real flagged |
-| **M5** | modern probe → CIFAKE | 0.5070 | 0.4641 | **0.4550** | 2000 | still near chance |
+| Probe / setting | Acc | AP | AUC | n | Notes |
+|-----------------|-----|----|-----|---|-------|
+| Smoke: UniFD HF, 20-img pack | ≥18/20 gate | — | — | 20 | Wiring / correctness gate |
+| CIFAKE subset probe | 0.9125 | 0.9736 | **0.9739** | 2000 | In-domain subset; plan targets met |
+| CIFAKE probe → Hemg wild | 0.481 | 0.462 | **0.456** | 160 | Cross-gen failure (domain gap) |
+| ProGAN probe → holdout | 0.9875 | 0.9997 | **0.9997** | 400 | In-domain strong |
+| ProGAN probe → Hemg | 0.5706 | 0.8128 | **0.7798** | 177 | **Near-miss** vs ≥0.80 |
+| ProGAN probe → CIFAKE | 0.4215 | 0.4188 | **0.3915** | 2000 | Severe tradeoff |
+| soft_router → ProGAN holdout | 0.9700 | 0.9971 | **0.9972** | 400 | Product in-domain OK |
+| soft_router → CIFAKE subset | 0.8975 | 0.9647 | **0.9666** | 800 | Restores CIFAKE |
+| soft_router → Hemg | 0.6328 | 0.6482 | **0.6885** | 177 | **Worse** than ProGAN-only |
+| ProGAN-only Hemg (best of those) | 0.5706 | 0.8128 | **0.7798** | 177 | Still **&lt; 0.80** |
+| Modern probe → OpenFake held-out gens (clean) | 0.8565 | 0.9521 | **0.9357** | 2717 | old ProGAN probe: AUC 0.599, catches 1.6% of fakes |
+| Modern probe → OpenFake held-out (JPEG 75) | 0.8679 | 0.9603 | **0.9478** | 2717 | old: 0.611 |
+| Modern probe → Hemg | 0.7288 | 0.8510 | **0.8274** | 177 | old 0.7798; Hemg reals are 46% correct (many are drawings/art) |
+| Modern probe → ProGAN holdout | 0.9750 | 0.9984 | **0.9983** | 400 | old 0.9997 |
+| Modern probe → smoke fixtures | 0.95 | 1.0 | **1.0** | 20 | 1 real flagged |
+| Modern probe → CIFAKE | 0.5070 | 0.4641 | **0.4550** | 2000 | still near chance |
 
-Sources: `docs/m2_cifake_run.md`, `docs/m3b_progan_probe.md`, `docs/m3c_near_miss.md`, `docs/m3c_dual_probe_summary.json`.
+Sources: `docs/cifake_probe_run.md`, `docs/progan_probe.md`, `docs/dual_probe_near_miss.md`, `docs/dual_probe_summary.json`.
 
 
-M5 data: [ComplexDataLab/OpenFake](https://huggingface.co/datasets/ComplexDataLab/OpenFake) (CC-BY-NC-4.0, v2.1). Train = `core/validation` shards 0-2 (5,754 fakes from 58 generators + 5,225 LAION/Pexels reals, JPEG/downscale/blur aug) + ProGAN train split (1,921). Held-out eval = `core/test` shards 0 and 7 (21 generators never seen in training, DOCCI/ImageNet reals).
-Full M5 tables (per generator, real-photo false positives): `docs/m5_results.md`, `docs/m5_modern_probe_summary.json`.
+Training data: [ComplexDataLab/OpenFake](https://huggingface.co/datasets/ComplexDataLab/OpenFake) (CC-BY-NC-4.0, v2.1). Train = `core/validation` shards 0-2 (5,754 fakes from 58 generators + 5,225 LAION/Pexels reals, JPEG/downscale/blur aug) + ProGAN train split (1,921). Held-out eval = `core/test` shards 0 and 7 (21 generators never seen in training, DOCCI/ImageNet reals).
+Full modern-probe tables (per generator, real-photo false positives): `docs/modern_probe_results.md`, `docs/modern_probe_summary.json`.
 
-**Product default (M5):** modern probe. Real-photo accuracy on held-out OpenFake reals: 0.88 (ImageNet 0.97, DOCCI 0.78) vs 0.99 for the old probe.  
-**Legacy:** `progan` = M3b ProGAN-only probe (old default).  
+**Product default:** modern probe. Real-photo accuracy on held-out OpenFake reals: 0.88 (ImageNet 0.97, DOCCI 0.78) vs 0.99 for the old probe.  
+**Legacy:** `progan` = ProGAN-only probe (old default).  
 **Optional `--ensemble soft_router`:** better CIFAKE+ProGAN balance; does **not** clear the Hemg gate.
 
 ## Failure modes
@@ -138,7 +138,7 @@ Full M5 tables (per generator, real-photo false positives): `docs/m5_results.md`
 | Cross-generator shift | Hemg / Midjourney-style packs drop ranking | Best shipped Hemg AUC ≈**0.78** (near-miss); not ≥0.80 |
 | CIFAKE vs ProGAN domain | ProGAN probe ≈ chance on CIFAKE | Use CIFAKE probe or `soft_router` when CIFAKE-like inputs matter |
 | soft_router on Hemg | Mixing CIFAKE head **hurts** Hemg AUC (~0.69) | Prefer single ProGAN probe for cross-gen reporting |
-| JPEG / resize | Score drift under social re-encoding | See M3 robustness rows in `docs/m3_crossgen.md` |
+| JPEG / resize | Score drift under social re-encoding | See robustness rows in `docs/cross_generator_eval.md` |
 | Missing weights | Random head → meaningless `p_fake` | `model_id` …`-untrained`; run `download_weights.py` / train probes |
 | Face-swap video | Out of scope | Do not use as a deepfake-video detector |
 | Legal / forensic use | Model score ≠ authenticity proof | Notes always say **not court-grade** |
@@ -147,23 +147,23 @@ Full M5 tables (per generator, real-photo false positives): `docs/m5_results.md`
 
 ```bash
 pytest -q
-# Schema / CLI JSON / weight preference: tests/test_m4_schema.py
+# Schema / CLI JSON / weight preference: tests/test_detect_schema.py
 # End-to-end infer smoke skips if UniFD weights absent.
 ```
 
 ## Train / eval (research path)
 
 ```bash
-# CIFAKE (M2)
+# CIFAKE probe
 python scripts/download_cifake.py
 python -m deepfake_detection.train.probe --config configs/train_cifake_subset.yaml
 
-# ProGAN probe (M3b)
+# ProGAN probe
 python scripts/download_progan_train.py --sources progan_eval frp94_train
 python scripts/make_progan_splits.py
 python -m deepfake_detection.train.probe --config configs/train_progan_subset.yaml
 
-# Dual-probe tables (M3c)
+# Dual-probe tables
 python -m deepfake_detection.eval.dual_probe \
   --progan-weights weights/progan_clip_vit_l14_linear.pth \
   --cifake-weights weights/cifake_clip_vit_l14_linear.pth \
@@ -174,7 +174,8 @@ python -m deepfake_detection.eval.dual_probe \
 
 - `docs/plan.md` — project plan  
 - `docs/research.md` — prior art  
-- `docs/m3_crossgen.md` / `docs/m3b_progan_probe.md` / `docs/m3c_near_miss.md` — milestone write-ups  
+- `docs/cross_generator_eval.md` / `docs/progan_probe.md` / `docs/dual_probe_near_miss.md` — eval write-ups  
+- `docs/modern_probe_results.md` / `docs/modern_probe_summary.json` — modern-probe results  
 
 ## License
 

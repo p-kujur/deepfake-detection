@@ -1,5 +1,5 @@
 {
-  "milestone": "M3c",
+  "evaluation": "dual-probe ensemble",
   "selected": {
     "mode": "soft_router",
     "weight_a": 0.5,

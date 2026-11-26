@@ -26,7 +26,7 @@ logger = logging.getLogger(__name__)
 
 DEFAULT_NOTES = (
     "Experimental AIGC still-image score — not court-grade authenticity evidence. "
-    "M3 near-miss: best Hemg cross-gen AUC ≈0.78 with the ProGAN-trained probe; "
+    "The original ProGAN-trained probe scored Hemg cross-gen AUC ≈0.78 (short of 0.80); "
     "CIFAKE tradeoff when using that probe (AUC ≈0.39). "
     "Cross-generator limits remain; face-video out of scope for v1."
 )

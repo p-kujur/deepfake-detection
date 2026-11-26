@@ -1,10 +1,10 @@
-# M3 — Cross-generator eval + NPR-lite fusion
+# Cross-generator eval + NPR-lite fusion
 
 **Date:** 2026-09-21 (IST) · **Stretch target:** cross-gen AUC ≥ 0.80 · **Result:** **missed** (harness shipped).
 
 ## Goal
 
-1. Cross-test the M2 CIFAKE CLIP linear probe on unseen generator families.
+1. Cross-test the CIFAKE CLIP linear probe on unseen generator families.
 2. Add a second head (NPR-lite) + mean-prob fusion.
 3. Quick robustness: JPEG q=70 and short-side resize=128.
 4. Write `artifacts/runs/*/metrics.json`; commit code/docs (not datasets/weights).
@@ -31,7 +31,7 @@
 python scripts/download_crossgen.py --packs progan hemg_wild --max-per-class 80
 ```
 
-## NPR-lite in-domain (CIFAKE subset, same 4k/2k as M2)
+## NPR-lite in-domain (CIFAKE subset, same 4k/2k as the CIFAKE probe run)
 
 | Metric | Value |
 |--------|-------|
@@ -41,7 +41,7 @@ python scripts/download_crossgen.py --packs progan hemg_wild --max-per-class 80
 | n | 2000 |
 | Weights | `weights/npr_lite_cifake.pth` (gitignored) |
 
-## Cross-generator results (UniFD M2 probe)
+## Cross-generator results (CIFAKE UniFD probe)
 
 Honest numbers — **stretch AUC ≥ 0.80 not met**.
 
@@ -65,7 +65,7 @@ JPEG drop on ProGAN ≈ 0.05 (at the plan’s ≤0.05 budget); Hemg JPEG drop is
 
 ## Interpretation / blockers
 
-1. **Domain gap:** M2 probe was trained on CIFAKE (32×32 Stable Diffusion). ProGAN (GAN, ~256²) and Hemg (web Midjourney-style) are far OOD — collapse toward chance is expected without GenImage-scale training or Blur/JPEG aug + multi-generator data.
+1. **Domain gap:** The CIFAKE probe was trained on CIFAKE (32×32 Stable Diffusion). ProGAN (GAN, ~256²) and Hemg (web Midjourney-style) are far OOD — collapse toward chance is expected without GenImage-scale training or Blur/JPEG aug + multi-generator data.
 2. **NPR-lite** transfers poorly cross-gen (≈ chance) despite strong in-domain CIFAKE scores — residual CNN overfits CIFAKE fingerprint.
 3. **Full NPR / GenImage** skipped to keep downloads & deps modest; harness is ready for larger packs later.
 4. **No GPU** in this environment — CLIP ViT-L/14 eval is ~0.35 s/img CPU.
@@ -81,4 +81,4 @@ python -m deepfake_detection.eval.cross_gen \
   --packs progan_eval hemg_wild --max-per-class 80
 ```
 
-Summary artifact (gitignored): `artifacts/runs/<id>-m3-summary/summary.json`.
+Summary artifact (gitignored): `artifacts/runs/<id>-crossgen-summary/summary.json`.

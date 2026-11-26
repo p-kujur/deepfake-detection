@@ -1,4 +1,4 @@
-"""M3/M3c smoke: fusion math (mean + logit) + dual-probe helpers."""
+"""Fusion math (mean + logit) + dual-probe helpers."""
 
 from __future__ import annotations
 
