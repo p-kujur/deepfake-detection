@@ -3,9 +3,10 @@ import { createFrame, clearFrame, createFx, composite } from "./vendor/pixelfx/c
 import * as scanSweep from "./vendor/pixelfx/fx/ui/scan-sweep.js";
 import * as verdictBurst from "./vendor/pixelfx/fx/ui/verdict-burst.js";
 
-const SCAN_PALETTE = ["#5a3d42", "#8d6a6e", "#c9938a", "#d4a5b8", "#e8d4dc", "#f8e4dc", "#fffbf7"];
-const ROSE_PALETTE = ["#6b3030", "#9a3b3b", "#c96b6b", "#c9938a", "#f8d9d4", "#fff6f2", "#ffffff"];
-const SAGE_PALETTE = ["#1f4a32", "#2f6a45", "#6e9b7e", "#a3c4ae", "#d8ebd9", "#f4faf5", "#ffffff"];
+// Sweetie 16 ramps (dark -> bright)
+const SCAN_PALETTE = ["#1a1c2c", "#29366f", "#3b5dc9", "#41a6f6", "#73eff7", "#f4f4f4", "#ffffff"];
+const FAKE_PALETTE = ["#1a1c2c", "#5d275d", "#b13e53", "#ef7d57", "#ffcd75", "#f4f4f4", "#ffffff"];
+const REAL_PALETTE = ["#1a1c2c", "#257179", "#38b764", "#a7f070", "#ffcd75", "#f4f4f4", "#ffffff"];
 
 const reduced = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
@@ -98,7 +99,7 @@ export function startScan(host) {
     height: h,
     palette: SCAN_PALETTE,
     seed: 11,
-    light: 0.35,
+    light: 0.5,
   });
   scan.canvas.hidden = false;
   paint(scan);
@@ -121,9 +122,9 @@ export function startBurst(isFake) {
   burst.fx = createFx(verdictBurst, {
     x: w / 2,
     y: h / 2,
-    palette: isFake ? ROSE_PALETTE : SAGE_PALETTE,
+    palette: isFake ? FAKE_PALETTE : REAL_PALETTE,
     seed: isFake ? 5 : 9,
-    light: 0.35,
+    light: 0.6,
   });
   burst.canvas.hidden = false;
   paint(burst);

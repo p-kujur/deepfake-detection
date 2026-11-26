@@ -36,13 +36,13 @@ function show(r) {
   const pct = (p * 100).toFixed(1);
   const isFake = r.label === "fake";
   const lbl = $("label");
-  lbl.textContent = isFake ? "Fake" : "Real";
+  $("verdictText").textContent = isFake ? "Fake" : "Real";
   lbl.className = "verdict " + (isFake ? "fake" : "real");
   $("pct").textContent = `${pct}% likely AI-generated`;
-  const fill = $("fill");
-  fill.style.width = `${pct}%`;
-  fill.className = "fill " + (isFake ? "fake" : "real");
-  fill.parentElement.setAttribute("aria-valuenow", pct);
+  const pips = document.querySelectorAll(".pip");
+  const lit = p <= 0 ? 0 : Math.max(1, Math.round(p * pips.length));
+  pips.forEach((el, i) => el.classList.toggle("on", i < lit));
+  $("meter").setAttribute("aria-valuenow", pct);
   $("rawScore").textContent = Number.isFinite(p) ? p.toFixed(4) : String(r.p_fake);
   $("modelId").textContent = r.model_id;
   $("version").textContent = r.version;
