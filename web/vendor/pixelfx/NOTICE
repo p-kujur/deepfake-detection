@@ -1,0 +1,6 @@
+pixelfx (https://github.com/patch-gg/pixelfx) is included under the MIT License.
+Copyright (c) 2026 Patch
+Copyright (c) 2026 Hugo Duprez
+
+See LICENSE in this directory. The ui/scan-sweep and ui/verdict-burst effects
+were authored for this project using the pixelfx toolkit.

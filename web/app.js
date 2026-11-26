@@ -1,3 +1,5 @@
+import { initFx, startScan, stopScan, startBurst, stopAll } from "./fx.js";
+
 // Modal endpoint (set after `modal deploy modal_app/app.py`). Override with ?api=<base-url>.
 const DEFAULT_API = "https://p-kujur--deepfake-detector-detector-web.us-east.modal.run";
 const API = (new URLSearchParams(location.search).get("api") || DEFAULT_API).replace(/\/+$/, "");
@@ -6,6 +8,7 @@ const $ = (id) => document.getElementById(id);
 const fileIn = $("file"), drop = $("drop"), preview = $("preview"), dropText = $("dropText");
 const runBtn = $("run"), status = $("status"), model = $("model");
 let file = null;
+initFx();
 
 function setFile(f) {
   if (!f || !f.type.startsWith("image/")) return;
@@ -17,6 +20,7 @@ function setFile(f) {
   runBtn.disabled = false;
   $("result").hidden = true;
   $("meta").hidden = true;
+  stopAll();
   status.textContent = "";
 }
 
@@ -44,13 +48,18 @@ function show(r) {
   $("version").textContent = r.version;
   $("meta").hidden = false;
   $("result").hidden = false;
+  startBurst(isFake);
 }
 
 runBtn.addEventListener("click", async () => {
   if (!file) return;
   runBtn.disabled = true;
   runBtn.classList.add("loading");
+  $("result").hidden = true;
+  $("meta").hidden = true;
+  stopAll();
   status.textContent = "Analysing… the first request can take about a minute if the server is waking up.";
+  startScan(drop);
   try {
     if (file.size > MAX_BYTES) throw new Error("Image is larger than 10 MB");
     const body = new FormData();
@@ -61,10 +70,12 @@ runBtn.addEventListener("click", async () => {
     try { r = await resp.json(); } catch { /* non-JSON error page */ }
     if (!resp.ok) throw new Error(r?.detail || `Server error ${resp.status}`);
     if (!r || r.error) throw new Error(r?.error || "Empty response");
+    stopScan();
     show(r);
     status.textContent = "";
   } catch (e) {
     console.error(e);
+    stopScan();
     status.textContent = "Something went wrong: " + (e?.message || e) + ". Try again in a minute.";
   } finally {
     runBtn.disabled = false;

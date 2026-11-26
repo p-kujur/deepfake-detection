@@ -26,13 +26,17 @@
           Drop an image here
           <small>or tap to choose one</small>
         </span>
+        <canvas id="scanFx" class="fx-canvas" width="96" height="72" hidden aria-hidden="true"></canvas>
       </label>
 
       <button id="run" class="btn" disabled>Detect</button>
       <p id="status" class="status" aria-live="polite"></p>
 
       <section id="result" class="result" hidden>
-        <p id="label" class="verdict"></p>
+        <div class="verdict-wrap">
+          <p id="label" class="verdict"></p>
+          <canvas id="burstFx" class="fx-canvas fx-burst" width="80" height="80" hidden aria-hidden="true"></canvas>
+        </div>
         <p id="pct" class="pct"></p>
         <div class="bar" role="progressbar" aria-label="Likelihood the image is AI-generated" aria-valuemin="0" aria-valuemax="100">
           <div id="fill" class="fill"></div>
