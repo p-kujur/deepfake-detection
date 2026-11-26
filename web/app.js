@@ -13,8 +13,10 @@ function setFile(f) {
   preview.src = URL.createObjectURL(f);
   preview.hidden = false;
   dropText.hidden = true;
+  drop.classList.add("has-file");
   runBtn.disabled = false;
   $("result").hidden = true;
+  $("meta").hidden = true;
   status.textContent = "";
 }
 
@@ -28,17 +30,19 @@ drop.addEventListener("drop", (ev) => setFile(ev.dataTransfer.files[0]));
 function show(r) {
   const p = Math.max(0, Math.min(1, Number(r.p_fake)));
   const pct = (p * 100).toFixed(1);
+  const isFake = r.label === "fake";
   const lbl = $("label");
-  lbl.textContent = r.label;
-  lbl.className = "pill " + (r.label === "fake" ? "fake" : "real");
+  lbl.textContent = isFake ? "Fake" : "Real";
+  lbl.className = "verdict " + (isFake ? "fake" : "real");
   $("pct").textContent = `${pct}% likely AI-generated`;
   const fill = $("fill");
   fill.style.width = `${pct}%`;
-  fill.className = "fill " + (r.label === "fake" ? "fake" : "real");
+  fill.className = "fill " + (isFake ? "fake" : "real");
   fill.parentElement.setAttribute("aria-valuenow", pct);
+  $("rawScore").textContent = Number.isFinite(p) ? p.toFixed(4) : String(r.p_fake);
   $("modelId").textContent = r.model_id;
   $("version").textContent = r.version;
-  $("notes").textContent = r.notes;
+  $("meta").hidden = false;
   $("result").hidden = false;
 }
 
@@ -46,7 +50,7 @@ runBtn.addEventListener("click", async () => {
   if (!file) return;
   runBtn.disabled = true;
   runBtn.classList.add("loading");
-  status.textContent = "Analysing… if the server is asleep, the first request can take about a minute while it wakes.";
+  status.textContent = "Analysing… the first request can take about a minute if the server is waking up.";
   try {
     if (file.size > MAX_BYTES) throw new Error("Image is larger than 10 MB");
     const body = new FormData();
